@@ -1,0 +1,3 @@
+* remove concrete username dereferencing where possible
+* think of CLI arguments handling
+* make swank up and running within dumped image
