@@ -1,3 +1,9 @@
 * remove concrete username dereferencing where possible
 * think of CLI arguments handling
 * make swank up and running within dumped image
+* implement reminders
+** TODO xmpp
+*** http://blog.redlinernotes.com/posts/A-Common-Lisp-Web-Development-Primer-Part-2.html
+*** https://github.com/kingcons/clockwork/blob/master/src/reminder.lisp
+*** http://lisp-search.acceleration.net/html/trivial-timers.html
+** TODO email
