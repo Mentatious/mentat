@@ -1,4 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:mentat
-  (:use #:cl))
+  (:use #:cl)
+  (:export #:main))
