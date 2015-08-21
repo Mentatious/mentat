@@ -75,9 +75,18 @@
        (reply-chat connection (xmpp:from message)
                    (format nil "Added.")
                    (xmpp::type- message)))
-      ((optima.ppcre:ppcre "[Ll]istall")
+      ((optima.ppcre:ppcre "[Ll]istall$")
        (let ((entries (list-entries))
              (reply "No entries found."))
+         (when (> (length entries) 0)
+           (setf reply (format nil "entries:~{~%~a~}" entries)))
+         (reply-chat connection (xmpp:from message)
+                     reply
+                     (xmpp::type- message))))
+      ((optima.ppcre:ppcre "[Ll]istallorg$")
+       (let ((entries (list-entries t))
+             (reply "No entries found."))
+         (format nil "entries:~{~%~a~}" entries)
          (when (> (length entries) 0)
            (setf reply (format nil "entries:~{~%~a~}" entries)))
          (reply-chat connection (xmpp:from message)

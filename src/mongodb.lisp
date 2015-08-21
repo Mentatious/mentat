@@ -54,13 +54,15 @@
         (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1) (cl-mongo:kv "id" 1))))
        :limit 0)))))
 
-(defun list-entries ()
+(defun list-entries (&optional (as-org nil))
   (with-check-connection
     (let ((results (get-entries-sorted)))
       (loop for doc in results
-         for i from 1 to 1000
-         collect
-           (concatenate 'string (write-to-string i) ") " (format-entry doc))))))
+         for i from 1 to 1000 collect
+           (if as-org
+               (concatenate 'string "* " (format-entry doc))
+               (concatenate 'string (write-to-string i) ") " (format-entry doc)))
+           ))))
 
 (defun drop-entry (index)
   (let* ((entries (get-entries-sorted))
