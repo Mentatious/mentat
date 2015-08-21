@@ -12,12 +12,12 @@
       (when (> (length heading) 0) (cl-mongo:add-element "heading" (string-trim '(#\Space) heading) doc))
       (when (> (length timestamp) 0) (cl-mongo:add-element "timestamp" (string-trim '(#\Space) timestamp) doc))
       (when (> (length tags) 0) (cl-mongo:add-element "tags" (string-trim '(#\Space) tags) doc))
-      (cl-mongo:db.insert *collection-name* doc)
+      (cl-mongo:db.insert *entries-collection-name* doc)
       )))
 
 (defun clear-entries ()
   (with-check-connection
-    (cl-mongo:rm *collection-name* :all)))
+    (cl-mongo:rm *entries-collection-name* :all)))
 
 (defun format-entry (doc)
   (let ((status (cl-mongo:get-element "status" doc))
@@ -47,7 +47,7 @@
     (cl-mongo:docs
      (cl-mongo:iter
       (cl-mongo:db.find
-       *collection-name*
+       *entries-collection-name*
        (cl-mongo:kv
         (cl-mongo:kv "query"
                      (cl-mongo:kv nil nil))
@@ -66,5 +66,5 @@
   (let* ((entries (get-entries-sorted))
          (entry (nth (- index 1) entries))
          (formatted (format-entry entry)))
-    (cl-mongo:db.delete *collection-name* entry)
+    (cl-mongo:db.delete *entries-collection-name* entry)
     formatted))
