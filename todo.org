@@ -7,3 +7,5 @@
 *** https://github.com/kingcons/clockwork/blob/master/src/reminder.lisp
 *** http://lisp-search.acceleration.net/html/trivial-timers.html
 ** TODO email
+* make entries editable (analogous to referencing by number for deletion)
+* think harder of config implementation
