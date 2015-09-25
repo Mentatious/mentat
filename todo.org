@@ -9,3 +9,8 @@
 ** TODO email
 * make entries editable (analogous to referencing by number for deletion)
 * think harder of config implementation
+* add command for displaying all commands with documentation
+* add searching functionality
+* think of adding simple webserver for miscellaneous tasks
+* add ability to pass multiple indexes to "drop" command
+* add "done" alias for "drop" commandd
