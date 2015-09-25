@@ -1,0 +1,4 @@
+username: octocat
+xmpp_binary_name: mentat-xmpp-bot
+xmpp_upstart_conf: mentat-xmpp.conf
+xmpp_supervisor_conf: mentat-xmpp.conf
