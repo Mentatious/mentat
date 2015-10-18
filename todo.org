@@ -1,16 +1,22 @@
-* remove concrete username dereferencing where possible
-* think of CLI arguments handling
-* make swank up and running within dumped image
-* implement reminders
+* TODO remove concrete username dereferencing where possible
+* TODO think of CLI arguments handling
+* TODO make swank up and running within dumped image
+* TODO implement reminders
 ** TODO xmpp
 *** http://blog.redlinernotes.com/posts/A-Common-Lisp-Web-Development-Primer-Part-2.html
 *** https://github.com/kingcons/clockwork/blob/master/src/reminder.lisp
 *** http://lisp-search.acceleration.net/html/trivial-timers.html
 ** TODO email
-* make entries editable (analogous to referencing by number for deletion)
-* think harder of config implementation
-* add command for displaying all commands with documentation
-* add searching functionality
-* think of adding simple webserver for miscellaneous tasks
-* add ability to pass multiple indexes to "drop" command
-* add "done" alias for "drop" commandd
+* TODO make entries editable (analogous to referencing by number for deletion)
+* DONE think harder of config implementation
+CLOSED: [2015-10-18 Вс 20:55]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2015-10-18 Вс 20:55]
+  using yaml config format
+:END:
+* TODO add command for displaying all commands with documentation
+* TODO add searching functionality
+* TODO think of adding simple webserver for miscellaneous tasks
+* TODO add ability to pass multiple indexes to "drop" command
+* TODO add "done" alias for "drop" commandd
+* TODO think of data sorting startegies (e.g. lexicographically (out-of-the-box), by priority, etc.)
