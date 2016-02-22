@@ -6,9 +6,6 @@
     - name: build xmpp binary
       shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image)\""
 
-    - name: instantiate Upstart conf template
-      template: src=../conf/xmpp-service.conf dest=./service.conf
-
     - name: instantiate supervisor conf template
       template: src=../conf/xmpp-supervisor.conf dest=./supervisor.conf
 
@@ -25,8 +22,8 @@
       apt: name=supervisor state=present
       sudo: yes
 
-    - name: copy Upstart conf for xmpp bot
-      copy: src=./service.conf dest=/etc/init/{{ xmpp_upstart_conf }}
+    - name: check if supervisor daemon is running
+      service: name=supervisor state=started
       sudo: yes
 
     - name: copy supervisor conf for xmpp bot
@@ -61,8 +58,6 @@
 - hosts: localhost
 
   tasks:
-    - name: cleanup Upstart conf file
-      file: path=./service.conf state=absent
 
     - name: cleanup supervisor conf file
       file: path=./supervisor.conf state=absent
