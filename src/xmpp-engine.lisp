@@ -99,3 +99,63 @@
 
 (defun get-stanza ()
   (xmpp:receive-stanza *connection*))
+
+(defun process-message (connection message)
+  (unless (search (concatenate 'string "/" (xmpp:username connection))
+                  (xmpp:from message))
+    (format xmpp:*debug-stream* "~&~a msg ~a from ~a to ~a~%"
+            (xmpp::type- message)
+            (xmpp:body message)
+            (xmpp:from message)
+            (xmpp:to message))
+    (when (xmpp:body message)
+      (let ((msg-type (xmpp::type- message)))
+        (cond
+          ((equal msg-type "chat") (process-chat-message connection message))
+          ((equal msg-type "groupchat")
+           (process-groupchat-message connection message)))))))
+
+(defun process-chat-message (connection message)
+  (unless (process-personal connection message)
+    (reply-chat connection (xmpp:from message)
+                "Unknown query.."
+                (xmpp::type- message))))
+
+(defun process-personal (connection message)
+  (let ((body (xmpp:body message)))
+    (reply-chat connection (xmpp:from message)
+                (reply-message body)
+                (xmpp::type- message))))
+
+(defun process-groupchat-message (connection message)
+  (let ((starts (starts-with-nick (xmpp:username connection)
+                                  (xmpp:body message))))
+    (when starts
+      (progn
+        (setf (xmpp:body message) starts)
+        (unless (process-personal connection message)
+          (let* ((pos (position #\/ (xmpp:from message)))
+                 (to (if pos
+                         (subseq (xmpp:from message) (1+ pos))
+                         (xmpp:from message))))
+            (reply-chat connection (xmpp:from message)
+                        (format nil "~a: Unknown query." to)
+                        (xmpp::type- message)
+                        )))))))
+
+(defun callback-with-restart (&rest args)
+  (restart-case
+      (handler-case (apply #'xmpp::default-stanza-callback args)
+        (error (err) (push (make-user-error err) *errors*)))
+    (skip-stanza () '(ignored))))
+
+(defun reply-chat (connection to reply kind &key highlight xhtml)
+  (check-type reply (or string null))
+  (check-type highlight (or string null))
+  (format xmpp:*debug-stream* "~&[reply-chat] kind: ~a" kind)
+  (if (string-equal kind "groupchat")
+      (let* ((pos (position #\/ to))
+             (to (if pos (subseq to 0 pos) to))
+             (reply (if highlight (format nil "~a: ~a" highlight reply) reply)))
+        (xmpp:message connection to reply :type :groupchat :xhtml-body xhtml))
+      (xmpp:message connection to reply :type :chat :xhtml-body xhtml)))

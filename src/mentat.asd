@@ -17,4 +17,4 @@
                (:file "util")
                (:file "mongodb" )
                (:file "xmpp-engine")
-               (:file "xmpp-bot")))
+               (:file "bot")))
