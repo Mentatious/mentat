@@ -30,13 +30,10 @@
       copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ xmpp_supervisor_conf }}
       sudo: yes
 
-    - name: stat old xmpp remote binary
-      stat: path=/home/{{ username }}/{{ xmpp_binary_name }}
-      register: xmpp_binary_stat
-
     - name: remove old xmpp remote binary
-      command: rm /home/{{ username }}/{{ xmpp_binary_name }}
-      when: xmpp_binary_stat.stat.exists
+      file:
+        path=/home/{{ username }}/{{ xmpp_binary_name }}
+        state=absent
 
     - name: copy compiled xmpp binary to remote server
       copy: src=../{{ xmpp_binary_name }} dest=/home/{{ username }}
