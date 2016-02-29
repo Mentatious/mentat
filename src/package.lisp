@@ -2,4 +2,4 @@
 
 (defpackage #:mentat
   (:use #:cl)
-  (:export #:main))
+  (:export #:main-xmpp-bot))

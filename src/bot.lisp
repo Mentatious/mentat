@@ -18,7 +18,7 @@
   "XMPP connection")
 
 #+sbcl
-(defun main ()
+(defun main-xmpp-bot ()
   (with-interactive-interrupt
     (swank-loader:init)
     (swank:create-server
@@ -31,11 +31,11 @@
     (connect)))
 
 #+sbcl
-(defun save-image ()
+(defun save-image-xmpp-bot ()
   (sb-ext:save-lisp-and-die "mentat-xmpp-bot"
                             :compression t
                             :executable t
-                            :toplevel #'main))
+                            :toplevel #'main-xmpp-bot))
 
 (defun starts-with-nick (nick msg)
   (check-type nick string)

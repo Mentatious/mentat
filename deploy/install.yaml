@@ -4,7 +4,7 @@
     - include_vars: common_vars.yml
 
     - name: build xmpp binary
-      shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image)\""
+      shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image-xmpp-bot)\""
 
     - name: instantiate supervisor conf template
       template: src=../conf/xmpp-supervisor.conf dest=./supervisor.conf
