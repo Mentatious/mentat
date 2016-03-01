@@ -13,8 +13,8 @@
                #:alexandria
                #:cxml)
   :serial t
-  :components ((:file "package")
+  :components ((:file "bot/package")
                (:file "util")
                (:file "mongodb" )
-               (:file "xmpp-engine")
-               (:file "bot")))
+               (:file "bot/xmpp-engine")
+               (:file "bot/bot")))
