@@ -36,7 +36,7 @@
         state=absent
 
     - name: copy compiled xmpp binary to remote server
-      copy: src=../{{ xmpp_binary_name }} dest=/home/{{ username }}
+      copy: src=../deploy/{{ xmpp_binary_name }} dest=/home/{{ username }}
 
     - name: copy bot config to remote server
       copy: src=../src/config.lisp dest=/home/{{ username }}
