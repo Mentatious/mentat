@@ -49,35 +49,81 @@
           ((#\: #\,) (trim (subseq rest2 1)))
           (t rest2))))))
 
+(cl-lex:define-string-lexer bot-lexer
+  ("[Aa]dd" (return (values 'add $@)))
+  ("[Pp]rint" (return (values 'print $@)))
+  ("all" (return (values 'all $@)))
+  ("org" (return (values 'org $@)))
+  ("raw" (return (values 'raw $@)))
+  ("[Dd]rop" (return (values 'drop $@)))
+  ("[Cc]leardb" (return (values 'cleardb $@)))
+  ("\\:" (return (values 'tag-delim $@)))
+  ("[0-9]+" (return (values 'number (parse-integer $@))))
+  ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"]+" (return (values 'word $@))) ;TODO: more general definition
+  ("\\#[AaBbCc]" (return (values 'prio $@))))
+
+(yacc:define-parser bot-parser
+  (:start-symbol message)
+  (:terminals (word number prio add print all org raw drop cleardb))
+  (message (add todo prio words timestamp tags)
+           (add words
+                #'(lambda (add words)
+                    (declare (ignore add))
+                    (add-entry words)
+                    (format nil "Added.")))
+           (add words tags)
+           (add words timestamp)
+           (add words timestamp tags)
+           (add prio words)
+           (add prio words tags)
+           (add prio words timestamp)
+           (add prio words timestamp tags)
+           (add todo words)
+           (add todo words tags)
+           (add todo words timestamp)
+           (add todo words timestamp tags)
+           (add todo prio words)
+           (add todo prio words tags)
+           (add todo prio words timestamp)
+           (print all #'(lambda (print all)
+                          (declare (ignore print all))
+                          (let ((entries (list-entries)))
+                            (if (> (length entries) 0)
+                                (format nil "entries:~{~%~a~}" entries)
+                                (format nil "No entries found.")))))
+           (print org #'(lambda (print org)
+                          (declare (ignore print org))
+                          (let ((entries (list-entries t)))
+                            (if (> (length entries) 0)
+                                (format nil "entries:~{~%~a~}" entries)
+                                (format nil "No entries found.")))))
+           (print raw #'(lambda (print raw)
+                          (declare (ignore print raw))
+                          (format nil "Not implemented yet.")))
+           (drop number #'(lambda (drop number)
+                            (declare (ignore drop))
+                            (let ((deleted (drop-entry number)))
+                              (format nil "Dropped '~a'" deleted))))
+           (cleardb #'(lambda (print raw)
+                          (declare (ignore print raw))
+                          (format nil "Not implemented yet."))))
+  (words word
+         (words word
+                #'(lambda (words word)
+                    (string-right-trim
+                     " "
+                     (format nil "~{~a ~}~a" (alexandria:flatten words) word)))))
+  (tag (tag-delim word))
+  (tags (tag tag-delim)
+        (tag tags)))
+
 (defun reply-message (body)
-  (optima:match body
-    ((optima.ppcre:ppcre "[Aa]dd( todo| someday| waiting)*( \#[AaBbCc])*( .*)$" status priority entry)
-     (add-entry entry
-                :status status
-                :priority priority)
-     "Added.")
-    ((optima.ppcre:ppcre "[Ll]istall$")
-     (let ((entries (list-entries))
-           (reply "No entries found."))
-       (when (> (length entries) 0)
-         (format nil "entries:~{~%~a~}" entries))))
-    ((optima.ppcre:ppcre "[Ll]istallraw$")
-     (let ((entries (list-entries t))
-           (reply "No entries found."))
-       (when (> (length entries) 0)
-         (format nil "entries:~{~%~a~}" entries))))
-    ((optima.ppcre:ppcre "[Ll]istallorg$")
-     (let ((entries (list-entries t)) ;FIXME: make both 'raw' and 'org' working
-           (reply "No entries found."))
-       (when (> (length entries) 0)
-         (format nil "entries:~{~%~a~}" entries))))
-    ((optima.ppcre:ppcre "[Cc]learall")
-     (clear-entries)
-     "DB cleared.")
-    ((optima.ppcre:ppcre "[Dd]rop (.*)$" index) ;TODO: initially parse as integer
-     (let ((deleted (drop-entry (parse-integer index))))
-       (format nil "Dropped '~a'" deleted)))
-    (_ "Unknown query.")))
+  (handler-case
+      (yacc:parse-with-lexer (bot-lexer body) bot-parser)
+    (error (e)
+      (progn
+        (format nil "Unknown query: ~a" body)
+        ))))
 
 (defclass user-error ()
   ((object

@@ -7,11 +7,11 @@
                #:cl-mongo
                #:cl-xmpp-tls
                #:cl-xmpp-sasl
-               #:optima
-               #:optima.ppcre
                #:split-sequence
                #:alexandria
-               #:cxml)
+               #:cxml
+               #:cl-lex
+               #:yacc)
   :serial t
   :components ((:file "bot/package")
                (:file "util")
