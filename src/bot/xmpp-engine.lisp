@@ -70,7 +70,7 @@
                 &key (nick *xmpp-login*) (server *xmpp-server*))
   (check-type login string)
   (check-type password string)
-  (setf *connection* (xmpp:connect-tls :hostname server))
+  (setf *connection* (xmpp:connect :hostname server))
   (handler-case
       (unwind-protect
            (progn
