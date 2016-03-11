@@ -11,7 +11,8 @@
                #:alexandria
                #:cxml
                #:cl-lex
-               #:yacc)
+               #:yacc
+               #:swank)
   :serial t
   :components ((:file "bot/package")
                (:file "util")

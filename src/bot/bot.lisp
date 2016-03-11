@@ -20,12 +20,11 @@
 #+sbcl
 (defun main-xmpp-bot ()
   (with-interactive-interrupt
-    ;; (swank-loader:init)
-    ;; (swank:create-server
-    ;;  :port 4006
-    ;;  :style swank:*communication-style*
-    ;;  :dont-close t)
-    ;; (setq swank:*use-dedicated-output-stream* nil)
+    (setq swank:*use-dedicated-output-stream* nil)
+    (swank:create-server
+     :port 4006
+     :style swank:*communication-style*
+     :dont-close t)
     (load-config)
     (init-storage)
     (connect)))
