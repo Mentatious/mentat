@@ -104,9 +104,10 @@
                             (declare (ignore drop))
                             (let ((deleted (drop-entry number)))
                               (format nil "Dropped '~a'" deleted))))
-           (cleardb #'(lambda (print raw)
-                          (declare (ignore print raw))
-                          (format nil "Not implemented yet."))))
+           (cleardb #'(lambda (cleardb)
+                          (declare (ignore cleardb))
+                          (clear-entries)
+                          (format nil "DB wiped."))))
   (words word
          (words word
                 #'(lambda (words word)
