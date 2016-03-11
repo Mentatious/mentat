@@ -109,6 +109,11 @@
                           (clear-entries)
                           (format nil "DB wiped."))))
   (words word
+         (words number
+                #'(lambda (words word)
+                    (string-right-trim
+                     " "
+                     (format nil "~{~a ~}~a" (alexandria:flatten words) word))))
          (words word
                 #'(lambda (words word)
                     (string-right-trim
