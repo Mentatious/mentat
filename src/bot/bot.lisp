@@ -2,8 +2,8 @@
 
 (defparameter *db-name* nil
   "Mongo DB name")
-(defparameter *entries-collection-name* nil
-  "Mongo collection name")
+(defparameter *entries-collection-prefix* nil
+  "Mongo collection name prefix")
 (defparameter *xmpp-login* nil
   "xmpp login")
 (defparameter *xmpp-password* nil

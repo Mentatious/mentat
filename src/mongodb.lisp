@@ -4,6 +4,12 @@
   (with-check-connection
     (cl-mongo:db.use *db-name*)))
 
+(defparameter *current-collection-name* nil)
+
+(defun set-collection-name-by-user (username)
+  (setf *current-collection-name*
+        (concatenate 'string *entries-collection-prefix* "-" username)))
+
 (defun add-entry (heading &key (status "") (priority "") (timestamp "") (tags ""))
   (with-check-connection
     (let ((doc (cl-mongo:make-document)))
@@ -12,12 +18,12 @@
       (when (> (length heading) 0) (cl-mongo:add-element "heading" (string-trim '(#\Space) heading) doc))
       (when (> (length timestamp) 0) (cl-mongo:add-element "timestamp" (string-trim '(#\Space) timestamp) doc))
       (when (> (length tags) 0) (cl-mongo:add-element "tags" (string-trim '(#\Space) tags) doc))
-      (cl-mongo:db.insert *entries-collection-name* doc)
+      (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
 (defun clear-entries ()
   (with-check-connection
-    (cl-mongo:rm *entries-collection-name* :all)))
+    (cl-mongo:rm *current-collection-name* :all)))
 
 (defun format-entry (doc)
   (let ((status (cl-mongo:get-element "status" doc))
@@ -47,7 +53,7 @@
     (cl-mongo:docs
      (cl-mongo:iter
       (cl-mongo:db.find
-       *entries-collection-name*
+       *current-collection-name*
        (cl-mongo:kv
         (cl-mongo:kv "query"
                      (cl-mongo:kv nil nil))
@@ -68,5 +74,5 @@
   (let* ((entries (get-entries-sorted))
          (entry (nth (- index 1) entries))
          (formatted (format-entry entry)))
-    (cl-mongo:db.delete *entries-collection-name* entry)
+    (cl-mongo:db.delete *current-collection-name* entry)
     formatted))

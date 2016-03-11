@@ -122,8 +122,11 @@
                 (xmpp::type- message))))
 
 (defun process-personal (connection message)
-  (let ((body (xmpp:body message)))
-    (reply-chat connection (xmpp:from message)
+  (let* ((body (xmpp:body message))
+         (from (xmpp:from message))
+         (from-bare (subseq from 0 (position #\/ from))))
+    (set-collection-name-by-user from-bare)
+    (reply-chat connection from
                 (reply-message body)
                 (xmpp::type- message))))
 
