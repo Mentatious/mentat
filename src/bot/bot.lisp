@@ -112,10 +112,7 @@
                 #'(lambda (words word)
                     (string-right-trim
                      " "
-                     (format nil "~{~a ~}~a" (alexandria:flatten words) word)))))
-  (tag (tag-delim word))
-  (tags (tag tag-delim)
-        (tag tags)))
+                     (format nil "~{~a ~}~a" (alexandria:flatten words) word))))))
 
 (defun reply-message (body)
   (handler-case
