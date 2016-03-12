@@ -58,7 +58,7 @@
   ("[Cc]leardb" (return (values 'cleardb $@)))
   ("\\:" (return (values 'tag-delim $@)))
   ("[0-9]+" (return (values 'number (parse-integer $@))))
-  ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"]+" (return (values 'word $@))) ;TODO: more general definition
+  ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"\?\#]+" (return (values 'word $@))) ;TODO: more general definition
   ("\\#[AaBbCc]" (return (values 'prio $@))))
 
 (yacc:define-parser bot-parser
