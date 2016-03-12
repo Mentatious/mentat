@@ -54,6 +54,11 @@
   ("all" (return (values 'all $@)))
   ("org" (return (values 'org $@)))
   ("raw" (return (values 'raw $@)))
+  ("[Ss]ortby" (return (values 'sortby $@)))
+  ("id" (return (values 'id $@)))
+  ("status" (return (values 'status $@)))
+  ("priority" (return (values 'priority $@)))
+  ("heading" (return (values 'heading $@)))
   ("[Dd]rop" (return (values 'drop $@)))
   ("[Cc]leardb" (return (values 'cleardb $@)))
   ("\\:" (return (values 'tag-delim $@)))
@@ -63,7 +68,7 @@
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (word number prio add print all org raw drop cleardb))
+  (:terminals (word number prio add print all org raw drop cleardb sortby id status priority heading))
   (message (add todo prio words timestamp tags)
            (add words
                 #'(lambda (add words)
@@ -84,6 +89,24 @@
            (add todo prio words)
            (add todo prio words tags)
            (add todo prio words timestamp)
+           (sortby id
+                   #'(lambda (sortby id)
+                       (declare (ignore sortby))
+                       (setf *sortby-criterion* "id")))
+           (sortby status
+                   #'(lambda (sortby status)
+                       (declare (ignore sortby))
+                       (setf *sortby-criterion* "status")))
+           (sortby priority
+                   #'(lambda (sortby priority)
+                       (declare (ignore sortby))
+                       (setf *sortby-criterion* "priority")))
+           (sortby heading
+                   #'(lambda (sortby heading)
+                       (declare (ignore sortby))
+                       (setf *sortby-criterion* "heading")))
+           (sortby timestamp)
+           (sortby tags)
            (print all #'(lambda (print all)
                           (declare (ignore print all))
                           (let ((entries (list-entries)))

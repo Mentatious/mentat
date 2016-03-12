@@ -48,6 +48,8 @@
                 (concatenate 'string tags " ")
                 ""))))
 
+(defparameter *sortby-criterion* "id")
+
 (defun get-entries-sorted ()
   (with-check-connection
     (cl-mongo:docs
@@ -57,7 +59,8 @@
        (cl-mongo:kv
         (cl-mongo:kv "query"
                      (cl-mongo:kv nil nil))
-        (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1) (cl-mongo:kv "id" 1))))
+        (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
+                                            (cl-mongo:kv *sortby-criterion* 1))))
        :limit 0)))))
 
 (defun list-entries (&optional (as-org nil))
