@@ -147,6 +147,8 @@
       (yacc:parse-with-lexer (bot-lexer body) bot-parser)
     (error (e)
       (progn
+        ;; think of informative error analisys and output
+        (format xmpp:*debug-stream* "~&[reply-message] encountered error: ~a" e)
         (format nil "Unknown query: ~a" body)
         ))))
 
