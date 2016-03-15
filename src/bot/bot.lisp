@@ -48,6 +48,15 @@
           ((#\: #\,) (trim (subseq rest2 1)))
           (t rest2))))))
 
+;;TODO: automate
+(defparameter *usage*
+  '("add <words> - add entry"
+    "print <all|org|raw> print in various formats, use 'all' by default"
+    "sortby <id|status|priority|heading> - set sorting by entry field, 'id' used by default"
+    "drop <number> - drop entry by number, print entries beforehand, otherwise numbers may skew"
+    "cleardb - wipe database"
+    "usage - print this reference"))
+
 (cl-lex:define-string-lexer bot-lexer
   ("^[Aa]dd" (return (values 'add $@)))
   ("^[Pp]rint" (return (values 'print $@)))
@@ -61,6 +70,7 @@
   ("heading$" (return (values 'heading 'heading)))
   ("^[Dd]rop" (return (values 'drop $@)))
   ("^[Cc]leardb" (return (values 'cleardb $@)))
+  ("^[Uu]sage" (return (values 'usage $@)))
   ("\\:" (return (values 'tag-delim $@)))
   ("[0-9]+" (return (values 'number $@)))
   ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"\?\#]+" (return (values 'word $@))) ;TODO: more general definition
@@ -68,7 +78,7 @@
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (word number prio add print all org raw drop cleardb sortby id status priority heading))
+  (:terminals (word number prio add print all org raw drop cleardb sortby id status priority heading usage))
   (message (add todo prio words timestamp tags)
            (add words
                 #'(lambda (add words)
@@ -129,7 +139,10 @@
            (cleardb #'(lambda (cleardb)
                         (declare (ignore cleardb))
                         (clear-entries)
-                        (format nil "DB wiped."))))
+                        (format nil "DB wiped.")))
+           (usage #'(lambda (usage)
+                      (declare (ignore usage))
+                      (format nil "~{~%~a~}" *usage*))))
   (words number
          word
          (words number
