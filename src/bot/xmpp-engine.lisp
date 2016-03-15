@@ -127,7 +127,7 @@
          (from-bare (subseq from 0 (position #\/ from))))
     (set-collection-name-by-user from-bare)
     (reply-chat connection from
-                (reply-message body)
+                (reply-message (string-right-trim " " body))
                 (xmpp::type- message))))
 
 (defun process-groupchat-message (connection message)
