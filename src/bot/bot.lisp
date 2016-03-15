@@ -127,9 +127,9 @@
                             (let ((deleted (drop-entry (parse-integer number))))
                               (format nil "Dropped '~a'" deleted))))
            (cleardb #'(lambda (cleardb)
-                          (declare (ignore cleardb))
-                          (clear-entries)
-                          (format nil "DB wiped."))))
+                        (declare (ignore cleardb))
+                        (clear-entries)
+                        (format nil "DB wiped."))))
   (words number
          word
          (words number
