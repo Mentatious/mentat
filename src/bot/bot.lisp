@@ -62,7 +62,7 @@
   ("^[Dd]rop" (return (values 'drop $@)))
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("\\:" (return (values 'tag-delim $@)))
-  ("[0-9]+" (return (values 'number (parse-integer $@))))
+  ("[0-9]+" (return (values 'number $@)))
   ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"\?\#]+" (return (values 'word $@))) ;TODO: more general definition
   ("\\#[AaBbCc]" (return (values 'prio $@))))
 
@@ -124,13 +124,14 @@
                           (format nil "Not implemented yet.")))
            (drop number #'(lambda (drop number)
                             (declare (ignore drop))
-                            (let ((deleted (drop-entry number)))
+                            (let ((deleted (drop-entry (parse-integer number))))
                               (format nil "Dropped '~a'" deleted))))
            (cleardb #'(lambda (cleardb)
                           (declare (ignore cleardb))
                           (clear-entries)
                           (format nil "DB wiped."))))
-  (words word
+  (words number
+         word
          (words number
                 #'(lambda (words word)
                     (string-right-trim
