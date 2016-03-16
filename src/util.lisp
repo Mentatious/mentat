@@ -11,7 +11,7 @@
   `(handler-case
        (progn ,@body)
      (usocket:connection-refused-error (error)
-       (format t "ERROR: ~a~%Exiting...~%" error))))
+       (format xmpp:*debug-stream* "[check-connection] ERROR: ~a~%Exiting...~%" error))))
 
 (defun load-config (&optional (filename "config.lisp"))
   (handler-case (load filename :verbose t :print t)
