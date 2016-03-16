@@ -71,7 +71,6 @@
   ("^[Dd]rop" (return (values 'drop $@)))
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("^[Uu]sage" (return (values 'usage $@)))
-  ("\\:" (return (values 'tag-delim $@)))
   ("[0-9]+" (return (values 'number $@)))
   ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"\?\#]+" (return (values 'word $@))) ;TODO: more general definition
   ("\\#[AaBbCc]" (return (values 'prio $@))))
