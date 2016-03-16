@@ -12,12 +12,14 @@
 
 (defun add-entry (heading &key (status "") (priority "") (timestamp "") (tags ""))
   (with-check-connection
-    (let ((doc (cl-mongo:make-document)))
+    (let ((doc (cl-mongo:make-document))
+          (ts_added (get-universal-time)))
       (when (> (length status) 0) (cl-mongo:add-element "status" (string-trim '(#\Space) status) doc))
       (when (> (length priority) 0) (cl-mongo:add-element "priority" (string-trim '(#\Space) priority) doc))
       (when (> (length heading) 0) (cl-mongo:add-element "heading" (string-trim '(#\Space) heading) doc))
       (when (> (length timestamp) 0) (cl-mongo:add-element "timestamp" (string-trim '(#\Space) timestamp) doc))
       (when (> (length tags) 0) (cl-mongo:add-element "tags" (string-trim '(#\Space) tags) doc))
+      (cl-mongo:add-element "ts_added" (write-to-string ts_added) doc)
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
