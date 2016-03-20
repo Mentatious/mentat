@@ -33,22 +33,23 @@
         (heading (cl-mongo:get-element "heading" doc))
         (timestamp (cl-mongo:get-element "timestamp" doc))
         (tags (cl-mongo:get-element "tags" doc)))
-    (format nil "~a~a~a~a~a"
-            (if status
-                (concatenate 'string (string-upcase status) " ")
-                "")
-            (if priority
-                (concatenate 'string "[" (string-upcase priority) "]" " ")
-                "")
-            (if heading
-                (concatenate 'string heading " ")
-                "")
-            (if timestamp
-                (concatenate 'string timestamp " ")
-                "")
-            (if tags
-                (concatenate 'string tags " ")
-                ""))))
+    (string-right-trim
+     " " (format nil "~a~a~a~a~a"
+                 (if status
+                     (concatenate 'string (string-upcase status) " ")
+                     "")
+                 (if priority
+                     (concatenate 'string "[" (string-upcase priority) "]" " ")
+                     "")
+                 (if heading
+                     (concatenate 'string heading " ")
+                     "")
+                 (if timestamp
+                     (concatenate 'string timestamp " ")
+                     "")
+                 (if tags
+                     (concatenate 'string tags " ")
+                     "")))))
 
 (defparameter *sortby-criterion* "id")
 
