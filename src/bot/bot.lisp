@@ -58,6 +58,7 @@
     "usage - print this reference"))
 
 (cl-lex:define-string-lexer bot-lexer
+  ("\"" (return (values 'quote $@)))
   ("^[Aa]dd" (return (values 'add $@)))
   ("^[Pp]rint" (return (values 'print $@)))
   ("all$" (return (values 'all 'all)))
@@ -72,20 +73,20 @@
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("^[Uu]sage" (return (values 'usage $@)))
   ("[0-9]+" (return (values 'number $@)))
-  ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\"\?\#]+" (return (values 'word $@))) ;TODO: more general definition
+  ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\?\#]+" (return (values 'word $@))) ;TODO: more general definition
   ("\\#[AaBbCc]" (return (values 'prio $@))))
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (word number prio add print all org raw drop cleardb sortby id status priority heading usage))
-  (message (add words
-                #'(lambda (add words)
-                    (declare (ignore add))
+  (:terminals (word number prio add quote print all org raw drop cleardb sortby id status priority heading usage))
+  (message (add quote words quote
+                #'(lambda (add quote words quote1)
+                    (declare (ignore add quote quote1))
                     (add-entry words)
                     (format nil "Added.")))
-           (add prio words)
-           (add todo words)
-           (add todo prio words)
+           (add prio quote words quote)
+           (add todo quote words quote)
+           (add todo prio quote words quote)
            (sortby id
                    #'(lambda (sortby id)
                        (declare (ignore sortby))
