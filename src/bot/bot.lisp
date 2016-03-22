@@ -59,6 +59,8 @@
 
 (cl-lex:define-string-lexer bot-lexer
   ("\"" (return (values 'quote $@)))
+  ("\-" (return (values 'hyphen $@)))
+  ("[0-9]+" (return (values 'number $@)))
   ("^[Aa]dd" (return (values 'add $@)))
   ("^[Pp]rint" (return (values 'print $@)))
   ("all$" (return (values 'all 'all)))
@@ -72,13 +74,12 @@
   ("^[Dd]rop" (return (values 'drop $@)))
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("^[Uu]sage" (return (values 'usage $@)))
-  ("[0-9]+" (return (values 'number $@)))
   ("[А-Яа-яA-Za-z0-9_.,\-/|><\:\'\=\(\)\*\?\#]+" (return (values 'word $@))) ;TODO: more general definition
   ("\\#[AaBbCc]" (return (values 'prio $@))))
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (word number prio add quote print all org raw drop cleardb sortby id status priority heading usage))
+  (:terminals (word number hyphen prio add quote print all org raw drop cleardb sortby id status priority heading usage))
   (message (add quote words quote
                 #'(lambda (add quote words quote1)
                     (declare (ignore add quote quote1))
@@ -118,6 +119,19 @@
            (print raw #'(lambda (print raw)
                           (declare (ignore print raw))
                           (format nil "Not implemented yet.")))
+           (drop number hyphen number #'(lambda (drop begin hyphen end)
+                            (declare (ignore drop hyphen))
+                            (let* ((begin-int (parse-integer begin))
+                                   (end-int (parse-integer end))
+                                   (start (min begin-int end-int))
+                                   (finish (max begin-int end-int))
+                                   (messages-to-drop nil)
+                                   (dropped-messages-list nil))
+                              (dolist (entry (loop for n from start below (+ finish 1) collect n))
+                                 (push (pick-entry entry) messages-to-drop))
+                              (dolist (entry (nreverse messages-to-drop))
+                                (push (drop-entry entry) dropped-messages-list))
+                              (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
            (drop number #'(lambda (drop number)
                             (declare (ignore drop))
                             (let ((deleted (drop-entry (parse-integer number))))
