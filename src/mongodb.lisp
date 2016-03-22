@@ -23,6 +23,10 @@
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
+(defun set-entry-field (entry field value)
+  (cl-mongo:add-element field (string-trim '(#\Space) value) entry)
+  (cl-mongo:db.save *current-collection-name* entry))
+
 (defun clear-entries ()
   (with-check-connection
     (cl-mongo:rm *current-collection-name* :all)))
