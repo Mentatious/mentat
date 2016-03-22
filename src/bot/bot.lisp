@@ -73,7 +73,7 @@
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("^[Uu]sage" (return (values 'usage $@)))
   ("[0-9]+" (return (values 'number $@)))
-  ("[A-Za-z0-9_.,\-/|><\:\'\=\(\)\*\?\#]+" (return (values 'word $@))) ;TODO: more general definition
+  ("[А-Яа-яA-Za-z0-9_.,\-/|><\:\'\=\(\)\*\?\#]+" (return (values 'word $@))) ;TODO: more general definition
   ("\\#[AaBbCc]" (return (values 'prio $@))))
 
 (yacc:define-parser bot-parser
