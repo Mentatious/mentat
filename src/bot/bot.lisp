@@ -122,6 +122,15 @@
                             (declare (ignore drop))
                             (let ((deleted (drop-entry (parse-integer number))))
                               (format nil "Dropped '~a'" deleted))))
+           (drop numbers #'(lambda (drop numbers)
+                             (declare (ignore drop))
+                             (let ((messages-to-drop nil)
+                                   (dropped-messages-list nil))
+                               (dolist (entry (mapcar #'parse-integer numbers))
+                                 (push (pick-entry entry) messages-to-drop))
+                               (dolist (entry (nreverse messages-to-drop))
+                                 (push (drop-entry entry) dropped-messages-list))
+                               (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
            (cleardb #'(lambda (cleardb)
                         (declare (ignore cleardb))
                         (clear-entries)
@@ -129,6 +138,14 @@
            (usage #'(lambda (usage)
                       (declare (ignore usage))
                       (format nil "~{~%~a~}" *usage*))))
+  (numbers number
+           (numbers number
+                    #'(lambda (numbers number)
+                        (split-sequence:split-sequence
+                         #\Space
+                         (string-right-trim
+                          " "
+                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number))))))
   (words number
          word
          (words number
