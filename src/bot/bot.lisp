@@ -50,10 +50,12 @@
 
 ;;TODO: automate
 (defparameter *usage*
-  '("add <words> - add entry"
+  '("add \"<words>\" - add entry"
     "print <all|org|raw> print in various formats, use 'all' by default"
     "sortby <id|status|priority|heading> - set sorting by entry field, 'id' used by default"
-    "drop <number> - drop entry by number, print entries beforehand, otherwise numbers may skew"
+    "drop <number> - drop entry by number, make sure to print entries beforehand, otherwise numbers may skew / state may evolve"
+    "drop <number> <number> ... <number> - specify multiple entry numbers to delete (space delimited)"
+    "drop <number>-<number> - specify range of entry numbers to delete"
     "cleardb - wipe database"
     "usage - print this reference"))
 
