@@ -76,9 +76,15 @@
                (concatenate 'string (write-to-string i) ") " (format-entry doc)))
            ))))
 
-(defun drop-entry (index)
+(defun pick-entry (index)
+  (nth (- index 1) (get-entries-sorted)))
+
+(defun drop-entry (entry)
   (let* ((entries (get-entries-sorted))
-         (entry (nth (- index 1) entries))
-         (formatted (format-entry entry)))
-    (cl-mongo:db.delete *current-collection-name* entry)
+         (entry-to-delete
+          (if (integerp entry)
+              (nth (- entry 1) entries)
+              entry))
+         (formatted (format-entry entry-to-delete)))
+    (cl-mongo:db.delete *current-collection-name* entry-to-delete)
     formatted))
