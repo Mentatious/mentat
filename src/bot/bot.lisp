@@ -50,7 +50,7 @@
 
 ;;TODO: automate
 (defparameter *usage*
-  '("add \"<words>\" - add entry"
+  '("add \"<entrydata>\" - add entry"
     "print <all|org|raw> print in various formats, use 'all' by default"
     "sortby <id|status|priority|heading> - set sorting by entry field, 'id' used by default"
     "drop <number> - drop entry by number, make sure to print entries beforehand, otherwise numbers may skew / state may evolve"
@@ -60,7 +60,9 @@
     "usage - print this reference"))
 
 (cl-lex:define-string-lexer bot-lexer
-  ("\"" (return (values 'quote $@)))
+  ("\"[А-Яа-яA-Za-z0-9_.,\-/|><\:\'\=\(\)\*\?\#\ ]+\""
+   (return (values 'entrydata
+                   (string-trim "\"" $@))))
   ("\-" (return (values 'hyphen $@)))
   ("[0-9]+" (return (values 'number $@)))
   ("^[Aa]dd" (return (values 'add $@)))
@@ -78,20 +80,23 @@
   ("^[Dd]rop" (return (values 'drop $@)))
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("^[Uu]sage" (return (values 'usage $@)))
-  ("[А-Яа-яA-Za-z0-9_.,\-/|><\:\'\=\(\)\*\?\#]+" (return (values 'word $@))) ;TODO: more general definition
+  ("todo" (return (values 'entrystatus $@)))
+  ("done" (return (values 'entrystatus $@)))
   ("\\#[AaBbCc]" (return (values 'prio $@))))
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (word number hyphen prio add quote print all org raw drop cleardb sortby id status priority heading update set usage))
-  (message (add quote words quote
-                #'(lambda (add quote words quote1)
-                    (declare (ignore add quote quote1))
-                    (add-entry words)
+  (:terminals (entrydata hyphen number
+               add print all org raw sortby id status priority heading
+               update set drop cleardb usage entrystatus prio))
+  (message (add entrydata
+                #'(lambda (add entrydata)
+                    (declare (ignore add))
+                    (add-entry entrydata)
                     (format nil "Added.")))
-           (add prio quote words quote)
-           (add todo quote words quote)
-           (add todo prio quote words quote)
+           (add prio entrydata)
+           (add todo entrydata)
+           (add todo prio entrydata)
            (sortby id
                    #'(lambda (sortby id)
                        (declare (ignore sortby))
@@ -149,14 +154,14 @@
                                (dolist (entry (nreverse messages-to-drop))
                                  (push (drop-entry entry) dropped-messages-list))
                                (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
-           (update number set heading quote words quote
-                   #'(lambda (update number set heading quote words quote1)
-                       (declare (ignore update set quote quote1))
+           (update number set heading entrydata
+                   #'(lambda (update number set heading entrydata)
+                       (declare (ignore update set))
                        (let* ((entry (pick-entry (parse-integer number)))
                               (formatted-before (format-entry entry)))
-                         (set-entry-field entry "heading" words)
+                         (set-entry-field entry "heading" entrydata)
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
-           (update number set status word)
+           (update number set status entrystatus)
            (update number set priority prio)
            (cleardb #'(lambda (cleardb)
                         (declare (ignore cleardb))
@@ -172,19 +177,7 @@
                          #\Space
                          (string-right-trim
                           " "
-                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number))))))
-  (words number
-         word
-         (words number
-                #'(lambda (words word)
-                    (string-right-trim
-                     " "
-                     (format nil "~{~a ~}~a" (alexandria:flatten words) word))))
-         (words word
-                #'(lambda (words word)
-                    (string-right-trim
-                     " "
-                     (format nil "~{~a ~}~a" (alexandria:flatten words) word))))))
+                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number)))))))
 
 (defun reply-message (body)
   (handler-case
