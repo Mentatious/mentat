@@ -14,12 +14,11 @@
   tasks:
     - include_vars: common_vars.yml
 
-    - name: install mongo on remote server
-      apt: name=mongodb state=present
-      sudo: yes
-
-    - name: install supervisor on remote server
-      apt: name=supervisor state=present
+    - name: install packages on remote server
+      apt: name={{ item }} state=present
+      with_items:
+        - mongodb
+        - supervisor
       sudo: yes
 
     - name: check if supervisor daemon is running
