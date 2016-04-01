@@ -173,6 +173,13 @@
                          (set-entry-field entry "heading" entrydata)
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
            (update number set status entrystatus)
+           (update number set priority prio
+                   #'(lambda (update number set priority prio)
+                       (declare (ignore update set))
+                       (let* ((entry (pick-entry (parse-integer number)))
+                              (formatted-before (format-entry entry)))
+                         (set-entry-field entry "priority" prio)
+                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
            (search priority prio
                    #'(lambda (search priority prio)
                           (declare (search priority))
