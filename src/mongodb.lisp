@@ -65,7 +65,11 @@
        *current-collection-name*
        (cl-mongo:kv
         (cl-mongo:kv "query"
-                     (cl-mongo:kv field value))
+                     (cl-mongo:kv field
+                                  (if value
+                                      (cl-mongo:kv (cl-mongo:kv "$regex" value)
+                                                   (cl-mongo:kv "$options" "i"))
+                                      value)))
         (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
                                             (cl-mongo:kv *sortby-criterion* 1))))
        :limit 0)))))
