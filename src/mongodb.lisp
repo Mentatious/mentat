@@ -57,7 +57,7 @@
 
 (defparameter *sortby-criterion* "ts_added")
 
-(defun get-entries-sorted ()
+(defun get-entries-sorted (&key (field nil) (value nil))
   (with-check-connection
     (cl-mongo:docs
      (cl-mongo:iter
@@ -65,14 +65,14 @@
        *current-collection-name*
        (cl-mongo:kv
         (cl-mongo:kv "query"
-                     (cl-mongo:kv nil nil))
+                     (cl-mongo:kv field value))
         (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
                                             (cl-mongo:kv *sortby-criterion* 1))))
        :limit 0)))))
 
-(defun list-entries (&optional (as-org nil))
+(defun list-entries (&key (as-org nil) (field nil) (value nil))
   (with-check-connection
-    (let ((results (get-entries-sorted)))
+    (let ((results (get-entries-sorted :field field :value value)))
       (loop for doc in results
          for i from 1 to 1000 collect
            (if as-org

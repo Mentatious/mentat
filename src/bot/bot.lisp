@@ -82,6 +82,7 @@
   ("^[Dd]rop" (return (values 'drop $@)))
   ("^[Cc]leardb" (return (values 'cleardb $@)))
   ("^[Uu]sage" (return (values 'usage $@)))
+  ("^[Ss]earch" (return (values 'search $@)))
   ("todo" (return (values 'entrystatus $@)))
   ("done" (return (values 'entrystatus $@)))
   ("\\#[AaBbCc]" (return (values 'prio $@))))
@@ -90,7 +91,7 @@
   (:start-symbol message)
   (:terminals (entrydata hyphen number
                add print all org raw sortby what id status priority heading ts
-               update set drop cleardb usage entrystatus prio))
+               update set drop cleardb usage entrystatus search prio))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -131,7 +132,7 @@
                                 (format nil "No entries found.")))))
            (print org #'(lambda (print org)
                           (declare (ignore print org))
-                          (let ((entries (list-entries t)))
+                          (let ((entries (list-entries :as-org t)))
                             (if (> (length entries) 0)
                                 (format nil "entries:~{~%~a~}" entries)
                                 (format nil "No entries found.")))))
@@ -172,7 +173,13 @@
                          (set-entry-field entry "heading" entrydata)
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
            (update number set status entrystatus)
-           (update number set priority prio)
+           (search priority prio
+                   #'(lambda (search priority prio)
+                          (declare (search priority))
+                          (let ((entries (list-entries :field priority :value prio)))
+                            (if (> (length entries) 0)
+                                (format nil "entries:~{~%~a~}" entries)
+                                (format nil "No entries found.")))))
            (cleardb #'(lambda (cleardb)
                         (declare (ignore cleardb))
                         (clear-entries)
