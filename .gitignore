@@ -1,4 +1,4 @@
 config.lisp
 data
+deploy/mentat-xmpp-bot
 inventory.ini
-mentat-*

@@ -1,0 +1,8 @@
+/var/log/supervisor/mentat-xmpp-bot-stdout.log {
+        rotate 5
+        size=1M
+        compress
+        notifempty
+        extension gz
+        missingok
+}

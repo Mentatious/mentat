@@ -19,6 +19,7 @@
       with_items:
         - mongodb
         - supervisor
+        - logrotate
       sudo: yes
 
     - name: check if supervisor daemon is running
@@ -39,6 +40,13 @@
 
     - name: copy bot config to remote server
       copy: src=../src/config.lisp dest=/home/{{ username }}
+
+    - name: copy logrotate config to remote server
+      copy:
+        src=../conf/mentat-xmpp-bot.logrotate
+        dest=/etc/logrotate.d/mentat-xmpp-bot
+        mode=0644
+      sudo: yes
 
     - name: set xmpp binary attrs
       file: path=/home/{{ username }}/{{ xmpp_binary_name }} mode=u+rwx
