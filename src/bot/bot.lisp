@@ -71,10 +71,12 @@
   ("org$" (return (values 'org 'org)))
   ("raw$" (return (values 'raw 'raw)))
   ("^[Ss]ortby" (return (values 'sortby $@)))
+  ("what" (return (values 'what $@)))
   ("id" (return (values 'id 'id)))
   ("status" (return (values 'status 'status)))
   ("priority" (return (values 'priority 'priority)))
   ("heading" (return (values 'heading 'heading)))
+  ("ts" (return (values 'ts 'ts)))
   ("[Uu]pdate" (return (values 'update 'update)))
   ("set" (return (values 'set 'set)))
   ("^[Dd]rop" (return (values 'drop $@)))
@@ -87,7 +89,7 @@
 (yacc:define-parser bot-parser
   (:start-symbol message)
   (:terminals (entrydata hyphen number
-               add print all org raw sortby id status priority heading
+               add print all org raw sortby what id status priority heading ts
                update set drop cleardb usage entrystatus prio))
   (message (add entrydata
                 #'(lambda (add entrydata)
@@ -97,6 +99,10 @@
            (add prio entrydata)
            (add todo entrydata)
            (add todo prio entrydata)
+           (sortby what
+                   #'(lambda (sortby what)
+                       (declare (ignore sortby what))
+                       (format nil "Sorting by: ~a" *sortby-criterion*)))
            (sortby id
                    #'(lambda (sortby id)
                        (declare (ignore sortby))
@@ -113,6 +119,10 @@
                    #'(lambda (sortby heading)
                        (declare (ignore sortby))
                        (setf *sortby-criterion* "heading")))
+           (sortby ts
+                   #'(lambda (sortby ts)
+                       (declare (ignore sortby))
+                       (setf *sortby-criterion* "ts_added")))
            (print all #'(lambda (print all)
                           (declare (ignore print all))
                           (let ((entries (list-entries)))

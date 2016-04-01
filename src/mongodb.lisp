@@ -55,7 +55,7 @@
                      (concatenate 'string tags " ")
                      "")))))
 
-(defparameter *sortby-criterion* "id")
+(defparameter *sortby-criterion* "ts_added")
 
 (defun get-entries-sorted ()
   (with-check-connection
