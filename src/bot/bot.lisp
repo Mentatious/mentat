@@ -182,7 +182,7 @@
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
            (search priority prio
                    #'(lambda (search priority prio)
-                          (declare (search priority))
+                          (declare (ignore search priority))
                           (let ((entries (list-entries :field priority :value prio)))
                             (if (> (length entries) 0)
                                 (format nil "entries:~{~%~a~}" entries)
