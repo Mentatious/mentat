@@ -10,7 +10,7 @@
   (setf *current-collection-name*
         (concatenate 'string *entries-collection-prefix* "-" username)))
 
-(defun add-entry (heading &key (status "") (priority "") (timestamp "") (tags ""))
+(defun add-entry (heading &key (status "") (priority "") (timestamp "") (tags nil))
   (with-check-connection
     (let ((doc (cl-mongo:make-document))
           (ts_added (get-universal-time)))
@@ -18,13 +18,15 @@
       (when (> (length priority) 0) (cl-mongo:add-element "priority" (string-trim '(#\Space) priority) doc))
       (when (> (length heading) 0) (cl-mongo:add-element "heading" (string-trim '(#\Space) heading) doc))
       (when (> (length timestamp) 0) (cl-mongo:add-element "timestamp" (string-trim '(#\Space) timestamp) doc))
-      (when (> (length tags) 0) (cl-mongo:add-element "tags" (string-trim '(#\Space) tags) doc))
+      (when (> (length tags) 0) (cl-mongo:add-element "tags" tags doc))
       (cl-mongo:add-element "ts_added" (write-to-string ts_added) doc)
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
 (defun set-entry-field (entry field value)
-  (cl-mongo:add-element field (string-trim '(#\Space) value) entry)
+  (if (listp value)
+      (cl-mongo:add-element field value entry)
+      (cl-mongo:add-element field (string-trim '(#\Space) value) entry))
   (cl-mongo:db.save *current-collection-name* entry))
 
 (defun clear-entries ()
@@ -52,7 +54,7 @@
                      (concatenate 'string timestamp " ")
                      "")
                  (if tags
-                     (concatenate 'string tags " ")
+                     (format nil ":~{~a:~}" tags)
                      "")))))
 
 (defparameter *sortby-criterion* "ts_added")

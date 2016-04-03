@@ -76,6 +76,8 @@
   ("status" (return (values 'status 'status)))
   ("priority" (return (values 'priority 'priority)))
   ("heading" (return (values 'heading 'heading)))
+  ("tags" (return (values 'tags 'tags)))
+  ("none" (return (values 'none 'none)))
   ("ts" (return (values 'ts 'ts)))
   ("[Uu]pdate" (return (values 'update 'update)))
   ("set" (return (values 'set 'set)))
@@ -85,11 +87,15 @@
   ("^[Ss]earch" (return (values 'search $@)))
   ("todo" (return (values 'entrystatus $@)))
   ("done" (return (values 'entrystatus $@)))
-  ("\\#[AaBbCc]" (return (values 'prio $@))))
+  ("\\#[AaBbCc]" (return (values 'prio $@)))
+  ("[0-9A-Za-z_]+\:"
+   (return (values 'tag
+                   (string-right-trim "\:" $@))))
+  ("\:" (return (values 'colon $@))))
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (entrydata hyphen number
+  (:terminals (entrydata hyphen number colon tag tags none
                add print all org raw sortby what id status priority heading ts
                update set drop cleardb usage entrystatus search prio))
   (message (add entrydata
@@ -173,6 +179,23 @@
                          (set-entry-field entry "heading" entrydata)
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
            (update number set status entrystatus)
+           (update number set tags colon manytags
+                   #'(lambda (update number set tags colon manytags)
+                       (declare (ignore update set tags colon))
+                       (let* ((entry (pick-entry (parse-integer number)))
+                              (formatted-before (format-entry entry)))
+                         (set-entry-field entry "tags"
+                                          (if (listp manytags)
+                                              manytags
+                                              (list manytags)))
+                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+           (update number set tags none
+                   #'(lambda (update number set tags none)
+                       (declare (ignore update set tags none))
+                       (let* ((entry (pick-entry (parse-integer number)))
+                              (formatted-before (format-entry entry)))
+                         (set-entry-field entry "tags" nil)
+                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
            (update number set priority prio
                    #'(lambda (update number set priority prio)
                        (declare (ignore update set))
@@ -208,7 +231,12 @@
                          #\Space
                          (string-right-trim
                           " "
-                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number)))))))
+                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number))))))
+  (manytags tag
+            (manytags tag
+                      #'(lambda (manytags tag)
+                          (mapcar #'(lambda (tagdata) (string-right-trim ":" tagdata))
+                                  `(,@(alexandria:flatten manytags) ,tag))))))
 
 (defun reply-message (body)
   (handler-case
