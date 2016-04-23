@@ -6,6 +6,9 @@
     - name: build xmpp binary
       shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image-xmpp-bot)\""
 
+    - name: build webserver binary
+      shell: "sbcl --eval \"(ql:quickload 'mentat-webserver)\" --eval \"(mentat-webserver::save-image-webserver)\""
+
     - name: instantiate supervisor conf template
       template: src=../conf/supervisor.conf dest=./supervisor.conf
 
@@ -57,6 +60,16 @@
 
     - name: restart mentat-xmpp service on remote server
       supervisorctl: name=mentat-xmpp state=restarted
+      sudo: yes
+
+    - name: copy compiled webserver binary to remote server
+      copy: src=../deploy/{{ webserver_binary_name }} dest=/home/{{ username }}
+
+    - name: set webserver binary attrs
+      file: path=/home/{{ username }}/{{ webserver_binary_name }} mode=u+rwx
+
+    - name: restart mentat-webserver service on remote server
+      supervisorctl: name=mentat-webserver state=restarted
       sudo: yes
 
 - hosts: localhost
