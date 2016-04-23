@@ -1,0 +1,22 @@
+- hosts: botservers
+
+  vars:
+    date_format: +%Y-%m-%d_%H:%M:%S
+    db_name: mentat
+    dump_username: root
+    dump_password: password123
+    backup_dir: /home/{{ username }}/mentat_backups
+    dump_flags: --verbose
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: get backup time
+      shell: date {{ date_format }}
+      register: backup_time
+
+    - name: ensure backup dir exists
+      file: path={{ backup_dir }} state=directory
+
+    - name: dump Mongo database
+      shell: mongodump {{ dump_flags }} -o {{ backup_dir }}/mongo_backup_{{ backup_time.stdout }}
