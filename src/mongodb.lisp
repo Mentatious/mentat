@@ -80,7 +80,7 @@
   (with-check-connection
     (let ((results (find-entries-sorted :field field :value value)))
       (loop for doc in results
-         for i from 1 to 1000 collect
+         for i from 1 to (length results) collect
            (if as-org
                (concatenate 'string "* " (format-entry doc))
                (concatenate 'string (write-to-string i) ") " (format-entry doc)))
