@@ -59,7 +59,7 @@
 
 (defparameter *sortby-criterion* "ts_added")
 
-(defun get-entries-sorted (&key (field nil) (value nil))
+(defun find-entries-sorted (&key (field nil) (value nil))
   (with-check-connection
     (cl-mongo:docs
      (cl-mongo:iter
@@ -78,7 +78,7 @@
 
 (defun list-entries (&key (as-org nil) (field nil) (value nil))
   (with-check-connection
-    (let ((results (get-entries-sorted :field field :value value)))
+    (let ((results (find-entries-sorted :field field :value value)))
       (loop for doc in results
          for i from 1 to 1000 collect
            (if as-org
@@ -87,10 +87,10 @@
            ))))
 
 (defun pick-entry (index)
-  (nth (- index 1) (get-entries-sorted)))
+  (nth (- index 1) (find-entries-sorted)))
 
 (defun drop-entry (entry)
-  (let* ((entries (get-entries-sorted))
+  (let* ((entries (find-entries-sorted))
          (entry-to-delete
           (if (integerp entry)
               (nth (- entry 1) entries)
