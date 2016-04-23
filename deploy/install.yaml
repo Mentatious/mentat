@@ -30,6 +30,13 @@
       copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ supervisor_conf }}
       sudo: yes
 
+    - name: copy mentat config to remote server
+      copy: src=../src/config.lisp dest=/home/{{ username }}
+
+    - name: check if mongodb is up and running on remote server
+      service: name=mongodb state=started
+      sudo: yes
+
     - name: remove old xmpp remote binary
       file:
         path=/home/{{ username }}/{{ xmpp_binary_name }}
@@ -38,10 +45,7 @@
     - name: copy compiled xmpp binary to remote server
       copy: src=../deploy/{{ xmpp_binary_name }} dest=/home/{{ username }}
 
-    - name: copy bot config to remote server
-      copy: src=../src/config.lisp dest=/home/{{ username }}
-
-    - name: copy logrotate config to remote server
+    - name: copy xmpp logrotate config to remote server
       copy:
         src=../conf/mentat-xmpp-bot.logrotate
         dest=/etc/logrotate.d/mentat-xmpp-bot
@@ -50,10 +54,6 @@
 
     - name: set xmpp binary attrs
       file: path=/home/{{ username }}/{{ xmpp_binary_name }} mode=u+rwx
-
-    - name: check if mongodb is up and running on remote server
-      service: name=mongodb state=started
-      sudo: yes
 
     - name: restart mentat-xmpp service on remote server
       supervisorctl: name=mentat-xmpp state=restarted
