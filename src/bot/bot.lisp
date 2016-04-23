@@ -60,7 +60,7 @@
     "usage - print this reference"))
 
 (cl-lex:define-string-lexer bot-lexer
-  ("\"[А-Яа-яA-Za-z0-9_.,\%\-/|><\:\'\=\(\)\*\?\#\@\`\ ]+\""
+  ("\"[А-Яа-яA-Za-z0-9_.,\%\-/|><\:\'\=\(\)\*\?\#\№\@\`\ ]+\""
    (return (values 'entrydata
                    (string-trim "\"" $@))))
   ("\-" (return (values 'hyphen $@)))
