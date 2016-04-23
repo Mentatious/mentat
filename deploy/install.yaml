@@ -7,7 +7,7 @@
       shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image-xmpp-bot)\""
 
     - name: instantiate supervisor conf template
-      template: src=../conf/xmpp-supervisor.conf dest=./supervisor.conf
+      template: src=../conf/supervisor.conf dest=./supervisor.conf
 
 - hosts: botservers
 
@@ -27,7 +27,7 @@
       sudo: yes
 
     - name: copy supervisor conf for xmpp bot
-      copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ xmpp_supervisor_conf }}
+      copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ supervisor_conf }}
       sudo: yes
 
     - name: remove old xmpp remote binary
