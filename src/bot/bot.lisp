@@ -59,6 +59,11 @@
     "cleardb - wipe database"
     "usage - print this reference"))
 
+(defun ensure-list (var)
+  (if (listp var)
+      var
+      (list var)))
+
 (cl-lex:define-string-lexer bot-lexer
   ("\"[А-Яа-яA-Za-z0-9_.,\%\-/|><\:\'\=\(\)\*\?\#\№\@\`\ ]+\""
    (return (values 'entrydata
@@ -184,11 +189,40 @@
                        (declare (ignore update set tags colon))
                        (let* ((entry (pick-entry (parse-integer number)))
                               (formatted-before (format-entry entry)))
-                         (set-entry-field entry "tags"
-                                          (if (listp manytags)
-                                              manytags
-                                              (list manytags)))
+                         (set-entry-field entry "tags" (ensure-list manytags))
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+           (update numbers set tags colon manytags
+                   #'(lambda (update numbers set tags colon manytags)
+                       (declare (ignore update set tags colon))
+                       (let ((messages-to-update nil)
+                             (updated-messages-list nil))
+                         (dolist (entry (mapcar #'parse-integer numbers))
+                           (push (pick-entry entry) messages-to-update))
+                         (dolist (entry (nreverse messages-to-update))
+                           (let ((formatted-before (format-entry entry)))
+                             (set-entry-field entry "tags" (ensure-list manytags))
+                             (push
+                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
+                              updated-messages-list)))
+                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
+           (update number hyphen number set tags colon manytags
+                   #'(lambda (update begin hyphen end set tags colon manytags)
+                       (declare (ignore update hyphen set tags colon))
+                       (let* ((begin-int (parse-integer begin))
+                              (end-int (parse-integer end))
+                              (start (min begin-int end-int))
+                              (finish (max begin-int end-int))
+                              (messages-to-update nil)
+                              (updated-messages-list nil))
+                         (dolist (entry (loop for n from start below (+ finish 1) collect n))
+                           (push (pick-entry entry) messages-to-update))
+                         (dolist (entry (nreverse messages-to-update))
+                           (let ((formatted-before (format-entry entry)))
+                             (set-entry-field entry "tags" (ensure-list manytags))
+                             (push
+                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
+                              updated-messages-list)))
+                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
            (update number set tags none
                    #'(lambda (update number set tags none)
                        (declare (ignore update set tags none))
