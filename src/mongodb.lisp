@@ -76,9 +76,33 @@
                                             (cl-mongo:kv *sortby-criterion* 1))))
        :limit 0)))))
 
+;;TODO: find less straightforward/more clever way to filter by lists
+(defun find-entries-by-list-sorted (&key (field nil) (value nil))
+  (declare (ignore field value))
+  (with-check-connection
+    (let ((docs-ordered
+           (cl-mongo:docs
+            (cl-mongo:iter
+             (cl-mongo:db.find
+              *current-collection-name*
+              (cl-mongo:kv
+               (cl-mongo:kv "query"
+                            (cl-mongo:kv nil nil))
+               (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
+                                                   (cl-mongo:kv *sortby-criterion* 1))))
+              :limit 0)))))
+      (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
+      (if (and field value (listp value))
+          (remove-if
+           (complement
+            (lambda (doc)
+              (intersection (cl-mongo:get-element field doc) value :test #'equalp))) docs-ordered)
+          docs-ordered))))
+
 (defun list-entries (&key (as-org nil) (field nil) (value nil))
   (with-check-connection
-    (let ((results (find-entries-sorted :field field :value value)))
+      (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field :value value))
+                           (t (find-entries-sorted :field field :value value)))))
       (loop for doc in results
          for i from 1 to (length results) collect
            (if as-org
