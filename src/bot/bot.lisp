@@ -64,6 +64,22 @@
       var
       (list var)))
 
+(defun pick-entries (&key (numbers nil) (begin nil) (end nil))
+  (let ((entries-to-process nil))
+    (cond ((and numbers (listp numbers))
+           (dolist (entry (mapcar #'parse-integer numbers))
+             (push (pick-entry entry) entries-to-process)))
+          ((and begin end)
+           (let* ((begin-int (parse-integer begin))
+                  (end-int (parse-integer end))
+                  (start (min begin-int end-int))
+                  (finish (max begin-int end-int)))
+             (dolist (entry (loop for n from start below (+ finish 1) collect n))
+               (push (pick-entry entry) entries-to-process))))
+          (t nil))
+    (when entries-to-process
+      (nreverse entries-to-process))))
+
 (cl-lex:define-string-lexer bot-lexer
   ("\"[А-Яа-яA-Za-z0-9_.,\%\-/|><\:\'\=\(\)\*\?\#\№\@\`\ ]+\""
    (return (values 'entrydata
@@ -152,15 +168,8 @@
                           (format nil "Not implemented yet.")))
            (drop number hyphen number #'(lambda (drop begin hyphen end)
                                           (declare (ignore drop hyphen))
-                                          (let* ((begin-int (parse-integer begin))
-                                                 (end-int (parse-integer end))
-                                                 (start (min begin-int end-int))
-                                                 (finish (max begin-int end-int))
-                                                 (messages-to-drop nil)
-                                                 (dropped-messages-list nil))
-                                            (dolist (entry (loop for n from start below (+ finish 1) collect n))
-                                              (push (pick-entry entry) messages-to-drop))
-                                            (dolist (entry (nreverse messages-to-drop))
+                                          (let ((dropped-messages-list nil))
+                                            (dolist (entry (pick-entries :begin begin :end end))
                                               (push (drop-entry entry) dropped-messages-list))
                                             (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
            (drop number #'(lambda (drop number)
@@ -169,11 +178,8 @@
                               (format nil "Dropped '~a'" deleted))))
            (drop numbers #'(lambda (drop numbers)
                              (declare (ignore drop))
-                             (let ((messages-to-drop nil)
-                                   (dropped-messages-list nil))
-                               (dolist (entry (mapcar #'parse-integer numbers))
-                                 (push (pick-entry entry) messages-to-drop))
-                               (dolist (entry (nreverse messages-to-drop))
+                             (let ((dropped-messages-list nil))
+                               (dolist (entry (pick-entries :numbers numbers))
                                  (push (drop-entry entry) dropped-messages-list))
                                (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
            (update number set heading entrydata
@@ -194,11 +200,8 @@
            (update numbers set tags colon manytags
                    #'(lambda (update numbers set tags colon manytags)
                        (declare (ignore update set tags colon))
-                       (let ((messages-to-update nil)
-                             (updated-messages-list nil))
-                         (dolist (entry (mapcar #'parse-integer numbers))
-                           (push (pick-entry entry) messages-to-update))
-                         (dolist (entry (nreverse messages-to-update))
+                       (let ((updated-messages-list nil))
+                         (dolist (entry (pick-entries :numbers numbers))
                            (let ((formatted-before (format-entry entry)))
                              (set-entry-field entry "tags" (ensure-list manytags))
                              (push
@@ -208,15 +211,8 @@
            (update number hyphen number set tags colon manytags
                    #'(lambda (update begin hyphen end set tags colon manytags)
                        (declare (ignore update hyphen set tags colon))
-                       (let* ((begin-int (parse-integer begin))
-                              (end-int (parse-integer end))
-                              (start (min begin-int end-int))
-                              (finish (max begin-int end-int))
-                              (messages-to-update nil)
-                              (updated-messages-list nil))
-                         (dolist (entry (loop for n from start below (+ finish 1) collect n))
-                           (push (pick-entry entry) messages-to-update))
-                         (dolist (entry (nreverse messages-to-update))
+                       (let ((updated-messages-list nil))
+                         (dolist (entry (pick-entries :begin begin :end end))
                            (let ((formatted-before (format-entry entry)))
                              (set-entry-field entry "tags" (ensure-list manytags))
                              (push
