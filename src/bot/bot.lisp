@@ -226,6 +226,28 @@
                               (formatted-before (format-entry entry)))
                          (set-entry-field entry "tags" nil)
                          (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+           (update numbers set tags none
+                   #'(lambda (update number set tags none)
+                       (declare (ignore update set tags none))
+                       (let ((updated-messages-list nil))
+                         (dolist (entry (pick-entries :numbers numbers))
+                           (let ((formatted-before (format-entry entry)))
+                             (set-entry-field entry "tags" nil)
+                             (push
+                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
+                              updated-messages-list)))
+                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
+           (update number hyphen number set tags none
+                   #'(lambda (update begin hyphen end set tags none)
+                       (declare (ignore update hyphen set tags none))
+                       (let ((updated-messages-list nil))
+                         (dolist (entry (pick-entries :begin begin :end end))
+                           (let ((formatted-before (format-entry entry)))
+                             (set-entry-field entry "tags" nil)
+                             (push
+                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
+                              updated-messages-list)))
+                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
            (update number set priority prio
                    #'(lambda (update number set priority prio)
                        (declare (ignore update set))
