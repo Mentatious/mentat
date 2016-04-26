@@ -66,8 +66,8 @@
 
 (defun pick-entries (&key (numbers nil) (begin nil) (end nil))
   (let ((entries-to-process nil))
-    (cond ((and numbers (listp numbers))
-           (dolist (entry (mapcar #'parse-integer numbers))
+    (cond (numbers
+           (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
              (push (pick-entry entry) entries-to-process)))
           ((and begin end)
            (let* ((begin-int (parse-integer begin))
@@ -79,6 +79,16 @@
           (t nil))
     (when entries-to-process
       (nreverse entries-to-process))))
+
+(defun update-entries (entries field value)
+  (let ((result-messages nil))
+    (dolist (entry (ensure-list entries))
+      (let ((before (format-entry entry)))
+        (set-entry-field entry field value)
+        (push
+         (format nil "Updated-----------~%before: '~a'~%after : '~a'" before (format-entry entry))
+         result-messages)))
+    (format nil "~{~%~a~}" (nreverse result-messages))))
 
 (cl-lex:define-string-lexer bot-lexer
   ("\"[А-Яа-яA-Za-z0-9_.,\%\-/|><\:\'\=\(\)\*\?\#\№\@\`\ ]+\""
@@ -185,69 +195,32 @@
            (update number set heading entrydata
                    #'(lambda (update number set heading entrydata)
                        (declare (ignore update set))
-                       (let* ((entry (pick-entry (parse-integer number)))
-                              (formatted-before (format-entry entry)))
-                         (set-entry-field entry "heading" entrydata)
-                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+                       (update-entries (pick-entries :numbers number) "heading" entrydata)))
            (update number set status entrystatus)
            (update number set tags colon manytags
                    #'(lambda (update number set tags colon manytags)
                        (declare (ignore update set tags colon))
-                       (let* ((entry (pick-entry (parse-integer number)))
-                              (formatted-before (format-entry entry)))
-                         (set-entry-field entry "tags" (ensure-list manytags))
-                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+                       (update-entries (pick-entries :numbers number) "tags" (ensure-list manytags))))
            (update numbers set tags colon manytags
                    #'(lambda (update numbers set tags colon manytags)
                        (declare (ignore update set tags colon))
-                       (let ((updated-messages-list nil))
-                         (dolist (entry (pick-entries :numbers numbers))
-                           (let ((formatted-before (format-entry entry)))
-                             (set-entry-field entry "tags" (ensure-list manytags))
-                             (push
-                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
-                              updated-messages-list)))
-                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
+                       (update-entries (pick-entries :numbers numbers) "tags" (ensure-list manytags))))
            (update number hyphen number set tags colon manytags
                    #'(lambda (update begin hyphen end set tags colon manytags)
                        (declare (ignore update hyphen set tags colon))
-                       (let ((updated-messages-list nil))
-                         (dolist (entry (pick-entries :begin begin :end end))
-                           (let ((formatted-before (format-entry entry)))
-                             (set-entry-field entry "tags" (ensure-list manytags))
-                             (push
-                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
-                              updated-messages-list)))
-                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
+                       (update-entries (pick-entries :begin begin :end end) "tags" (ensure-list manytags))))
            (update number set tags none
                    #'(lambda (update number set tags none)
                        (declare (ignore update set tags none))
-                       (let* ((entry (pick-entry (parse-integer number)))
-                              (formatted-before (format-entry entry)))
-                         (set-entry-field entry "tags" nil)
-                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+                       (update-entries (pick-entries :numbers number) "tags" nil)))
            (update numbers set tags none
                    #'(lambda (update number set tags none)
                        (declare (ignore update set tags none))
-                       (let ((updated-messages-list nil))
-                         (dolist (entry (pick-entries :numbers numbers))
-                           (let ((formatted-before (format-entry entry)))
-                             (set-entry-field entry "tags" nil)
-                             (push
-                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
-                              updated-messages-list)))
-                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
+                       (update-entries (pick-entries :numbers numbers) "tags" nil)))
            (update number hyphen number set tags none
                    #'(lambda (update begin hyphen end set tags none)
                        (declare (ignore update hyphen set tags none))
-                       (let ((updated-messages-list nil))
-                         (dolist (entry (pick-entries :begin begin :end end))
-                           (let ((formatted-before (format-entry entry)))
-                             (set-entry-field entry "tags" nil)
-                             (push
-                              (format nil "Updated-----------~%before: '~a'~%after : '~a'" formatted-before (format-entry entry))
-                              updated-messages-list)))
-                         (format nil "~{~%~a~}" (nreverse updated-messages-list)))))
+                       (update-entries (pick-entries :begin begin :end end) "tags" nil)))
            (update number set priority prio
                    #'(lambda (update number set priority prio)
                        (declare (ignore update set))
