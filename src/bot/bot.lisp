@@ -196,7 +196,18 @@
                    #'(lambda (update number set heading entrydata)
                        (declare (ignore update set))
                        (update-entries (pick-entries :numbers number) "heading" entrydata)))
-           (update number set status entrystatus)
+           (update number set status entrystatus
+                   #'(lambda (update number set status entrystatus)
+                       (declare (ignore update set status))
+                       (update-entries (pick-entries :numbers number) "status" entrystatus)))
+           (update numbers set status entrystatus
+                   #'(lambda (update numbers set status entrystatus)
+                       (declare (ignore update set status))
+                       (update-entries (pick-entries :numbers numbers) "status" entrystatus)))
+           (update number hyphen number set status entrystatus
+                   #'(lambda (update begin hyphen end set status entrystatus)
+                       (declare (ignore update hyphen set status))
+                       (update-entries (pick-entries :begin begin :end end) "status" entrystatus)))
            (update number set tags colon manytags
                    #'(lambda (update number set tags colon manytags)
                        (declare (ignore update set tags colon))
@@ -223,11 +234,16 @@
                        (update-entries (pick-entries :begin begin :end end) "tags" nil)))
            (update number set priority prio
                    #'(lambda (update number set priority prio)
-                       (declare (ignore update set))
-                       (let* ((entry (pick-entry (parse-integer number)))
-                              (formatted-before (format-entry entry)))
-                         (set-entry-field entry "priority" prio)
-                         (format nil "Updated.~%before: '~a'~%after : '~a'" formatted-before (format-entry entry)))))
+                       (declare (ignore update set priority))
+                       (update-entries (pick-entries :numbers number) "priority" prio)))
+           (update numbers set priority prio
+                   #'(lambda (update numbers set priority prio)
+                       (declare (ignore update set priority))
+                       (update-entries (pick-entries :numbers numbers) "priority" prio)))
+           (update number hyphen number set priority prio
+                   #'(lambda (update begin hyphen end set priority prio)
+                       (declare (ignore update hyphen set priority))
+                       (update-entries (pick-entries :begin begin :end end) "priority" prio)))
            (search priority prio
                    #'(lambda (search priority prio)
                        (declare (ignore search priority))
