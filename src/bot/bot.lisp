@@ -261,11 +261,7 @@
            (search tags colon manytags
                    #'(lambda (search tags colon manytags)
                        (declare (ignore search tags colon))
-                       (let ((entries (list-entries
-                                       :field "tags"
-                                       :value (if (listp manytags)
-                                                  manytags
-                                                  (list manytags)))))
+                       (let ((entries (list-entries :field "tags" :value (ensure-list manytags))))
                          (if (> (length entries) 0)
                              (format nil "entries:~{~%~a~}" entries)
                              (format nil "No entries found.")))))
