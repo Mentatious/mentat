@@ -93,6 +93,7 @@
   ("all$" (return (values 'all 'all)))
   ("org$" (return (values 'org 'org)))
   ("raw$" (return (values 'raw 'raw)))
+  ("last" (return (values 'last $@)))
   ("^[Ss]ortby" (return (values 'sortby $@)))
   ("what" (return (values 'what $@)))
   ("id" (return (values 'id 'id)))
@@ -120,7 +121,7 @@
   (:start-symbol message)
   (:terminals (entrydata hyphen number colon tag tags none
                add print all org raw sortby what id status priority heading ts
-               update set drop cleardb usage entrystatus search prio))
+               update set drop cleardb usage entrystatus search prio last))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -157,17 +158,23 @@
                           (declare (ignore print all))
                           (let ((entries (list-entries)))
                             (if (> (length entries) 0)
-                                (format nil "entries:~{~%~a~}" entries)
+                                (format nil "entries:~{~%~a~}" (print-entries entries))
                                 (format nil "No entries found.")))))
            (print org #'(lambda (print org)
                           (declare (ignore print org))
                           (let ((entries (list-entries :as-org t)))
                             (if (> (length entries) 0)
-                                (format nil "entries:~{~%~a~}" entries)
+                                (format nil "entries:~{~%~a~}" (print-entries entries :as-org t))
                                 (format nil "No entries found.")))))
            (print raw #'(lambda (print raw)
                           (declare (ignore print raw))
                           (format nil "Not implemented yet.")))
+           (print last #'(lambda (print last)
+                          (declare (ignore print last))
+                          (let ((entries *last-query-result*))
+                            (if (> (length entries) 0)
+                                (format nil "entries:~{~%~a~}" (print-entries entries))
+                                (format nil "No entries found.")))))
            (drop numbers #'(lambda (drop indexes)
                              (declare (ignore drop))
                              (let ((dropped-messages-list nil))
@@ -199,21 +206,21 @@
                        (declare (ignore search priority))
                        (let ((entries (list-entries :field priority :value prio)))
                          (if (> (length entries) 0)
-                             (format nil "entries:~{~%~a~}" entries)
+                             (format nil "entries:~{~%~a~}" (print-entries entries))
                              (format nil "No entries found.")))))
            (search heading entrydata
                    #'(lambda (search heading entrydata)
                        (declare (ignore search heading))
                        (let ((entries (list-entries :field heading :value entrydata)))
                          (if (> (length entries) 0)
-                             (format nil "entries:~{~%~a~}" entries)
+                             (format nil "entries:~{~%~a~}" (print-entries entries))
                              (format nil "No entries found.")))))
            (search tags colon manytags
                    #'(lambda (search tags colon manytags)
                        (declare (ignore search tags colon))
                        (let ((entries (list-entries :field "tags" :value (ensure-list manytags))))
                          (if (> (length entries) 0)
-                             (format nil "entries:~{~%~a~}" entries)
+                             (format nil "entries:~{~%~a~}" (print-entries entries))
                              (format nil "No entries found.")))))
            (cleardb #'(lambda (cleardb)
                         (declare (ignore cleardb))
