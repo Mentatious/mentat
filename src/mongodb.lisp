@@ -6,6 +6,8 @@
 
 (defparameter *current-collection-name* nil)
 
+(defparameter *last-query* nil)
+
 (defun set-collection-name-by-user (username)
   (setf *current-collection-name*
         (concatenate 'string *entries-collection-prefix* "-" username)))
@@ -103,6 +105,8 @@
   (with-check-connection
       (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field :value value))
                            (t (find-entries-sorted :field field :value value)))))
+        (setf *last-query* results)
+        (format xmpp:*debug-stream* "~&*last-query*: ~a" *last-query*)
         (loop for doc in results
            for i from 1 to (length results) collect
              (if as-org
