@@ -103,12 +103,12 @@
   (with-check-connection
       (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field :value value))
                            (t (find-entries-sorted :field field :value value)))))
-      (loop for doc in results
-         for i from 1 to (length results) collect
-           (if as-org
-               (concatenate 'string "* " (format-entry doc))
-               (concatenate 'string (write-to-string i) ") " (format-entry doc)))
-           ))))
+        (loop for doc in results
+           for i from 1 to (length results) collect
+             (if as-org
+                 (concatenate 'string "* " (format-entry doc))
+                 (concatenate 'string (write-to-string i) ") " (format-entry doc)))
+             ))))
 
 (defun pick-entry (index)
   (nth (- index 1) (find-entries-sorted)))
