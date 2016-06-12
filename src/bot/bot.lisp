@@ -91,7 +91,7 @@
     (format nil "~{~%~a~}" (nreverse result-messages))))
 
 (cl-lex:define-string-lexer bot-lexer
-  ("\"[А-Яа-яA-Za-z0-9ё_.,\%\-/|><\:\'\=\(\)\*\?\#\№\@\`\!\ ]+\""
+  ("\"[А-Яа-яA-Za-z0-9ё_.,\%\&\-/|><\:\;\'\=\(\)\*\?\#\№\@\`\!\ ]+\""
    (return (values 'entrydata
                    (string-trim "\"" $@))))
   ("\-" (return (values 'hyphen $@)))
