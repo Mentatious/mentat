@@ -181,6 +181,15 @@
                                (dolist (entry (pick-entries (ensure-list indexes)))
                                  (push (drop-entry entry) dropped-messages-list))
                                (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
+           (drop last #'(lambda (drop indexes)
+                          (declare (ignore drop last))
+                          (let ((dropped-messages-list nil))
+                            (if *last-query-result*
+                                (progn
+                                  (dolist (entry *last-query-result*)
+                                    (push (drop-entry entry) dropped-messages-list))
+                                  (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
+                                (format nil "No last query results, nothong to drop.")))))
            (update number set heading entrydata
                    #'(lambda (update index set heading entrydata)
                        (declare (ignore update set))
