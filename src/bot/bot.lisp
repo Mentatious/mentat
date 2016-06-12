@@ -64,25 +64,17 @@
       var
       (list var)))
 
-(defun pick-entries (&key (numbers nil) (begin nil) (end nil))
+;;FIXME: do not cherry-pick entries in batch
+(defun pick-entries (numbers)
   (let ((entries-to-process nil))
-    (cond (numbers
-           (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
-             (push (pick-entry entry) entries-to-process)))
-          ((and begin end)
-           (let* ((begin-int (parse-integer begin))
-                  (end-int (parse-integer end))
-                  (start (min begin-int end-int))
-                  (finish (max begin-int end-int)))
-             (dolist (entry (loop for n from start below (+ finish 1) collect n))
-               (push (pick-entry entry) entries-to-process))))
-          (t nil))
+    (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
+             (push (pick-entry entry) entries-to-process))
     (when entries-to-process
       (nreverse entries-to-process))))
 
 (defun update-entries (entries field value)
   (let ((result-messages nil))
-    (dolist (entry (ensure-list entries))
+    (dolist (entry entries)
       (let ((before (format-entry entry)))
         (set-entry-field entry field value)
         (push
@@ -176,74 +168,32 @@
            (print raw #'(lambda (print raw)
                           (declare (ignore print raw))
                           (format nil "Not implemented yet.")))
-           (drop number hyphen number #'(lambda (drop begin hyphen end)
-                                          (declare (ignore drop hyphen))
-                                          (let ((dropped-messages-list nil))
-                                            (dolist (entry (pick-entries :begin begin :end end))
-                                              (push (drop-entry entry) dropped-messages-list))
-                                            (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
-           (drop number #'(lambda (drop number)
-                            (declare (ignore drop))
-                            (let ((deleted (drop-entry (parse-integer number))))
-                              (format nil "Dropped '~a'" deleted))))
-           (drop numbers #'(lambda (drop numbers)
+           (drop numbers #'(lambda (drop indexes)
                              (declare (ignore drop))
                              (let ((dropped-messages-list nil))
-                               (dolist (entry (pick-entries :numbers numbers))
+                               (dolist (entry (pick-entries (ensure-list indexes)))
                                  (push (drop-entry entry) dropped-messages-list))
                                (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
            (update number set heading entrydata
-                   #'(lambda (update number set heading entrydata)
+                   #'(lambda (update index set heading entrydata)
                        (declare (ignore update set))
-                       (update-entries (pick-entries :numbers number) "heading" entrydata)))
-           (update number set status entrystatus
-                   #'(lambda (update number set status entrystatus)
-                       (declare (ignore update set status))
-                       (update-entries (pick-entries :numbers number) "status" entrystatus)))
+                       (update-entries (pick-entries (ensure-list index)) "heading" entrydata)))
            (update numbers set status entrystatus
-                   #'(lambda (update numbers set status entrystatus)
+                   #'(lambda (update indexes set status entrystatus)
                        (declare (ignore update set status))
-                       (update-entries (pick-entries :numbers numbers) "status" entrystatus)))
-           (update number hyphen number set status entrystatus
-                   #'(lambda (update begin hyphen end set status entrystatus)
-                       (declare (ignore update hyphen set status))
-                       (update-entries (pick-entries :begin begin :end end) "status" entrystatus)))
-           (update number set tags colon manytags
-                   #'(lambda (update number set tags colon manytags)
-                       (declare (ignore update set tags colon))
-                       (update-entries (pick-entries :numbers number) "tags" (ensure-list manytags))))
+                       (update-entries (pick-entries (ensure-list indexes)) "status" entrystatus)))
            (update numbers set tags colon manytags
-                   #'(lambda (update numbers set tags colon manytags)
+                   #'(lambda (update indexes set tags colon manytags)
                        (declare (ignore update set tags colon))
-                       (update-entries (pick-entries :numbers numbers) "tags" (ensure-list manytags))))
-           (update number hyphen number set tags colon manytags
-                   #'(lambda (update begin hyphen end set tags colon manytags)
-                       (declare (ignore update hyphen set tags colon))
-                       (update-entries (pick-entries :begin begin :end end) "tags" (ensure-list manytags))))
-           (update number set tags none
-                   #'(lambda (update number set tags none)
-                       (declare (ignore update set tags none))
-                       (update-entries (pick-entries :numbers number) "tags" nil)))
+                       (update-entries (pick-entries (ensure-list indexes)) "tags" (ensure-list manytags))))
            (update numbers set tags none
-                   #'(lambda (update number set tags none)
+                   #'(lambda (update indexes set tags none)
                        (declare (ignore update set tags none))
-                       (update-entries (pick-entries :numbers numbers) "tags" nil)))
-           (update number hyphen number set tags none
-                   #'(lambda (update begin hyphen end set tags none)
-                       (declare (ignore update hyphen set tags none))
-                       (update-entries (pick-entries :begin begin :end end) "tags" nil)))
-           (update number set priority prio
-                   #'(lambda (update number set priority prio)
-                       (declare (ignore update set priority))
-                       (update-entries (pick-entries :numbers number) "priority" prio)))
+                       (update-entries (pick-entries (ensure-list indexes)) "tags" nil)))
            (update numbers set priority prio
-                   #'(lambda (update numbers set priority prio)
+                   #'(lambda (update indexes set priority prio)
                        (declare (ignore update set priority))
-                       (update-entries (pick-entries :numbers numbers) "priority" prio)))
-           (update number hyphen number set priority prio
-                   #'(lambda (update begin hyphen end set priority prio)
-                       (declare (ignore update hyphen set priority))
-                       (update-entries (pick-entries :begin begin :end end) "priority" prio)))
+                       (update-entries (pick-entries (ensure-list indexes)) "priority" prio)))
            (search priority prio
                    #'(lambda (search priority prio)
                        (declare (ignore search priority))
@@ -279,7 +229,19 @@
                          #\Space
                          (string-right-trim
                           " "
-                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number))))))
+                          (format nil "~{~a ~}~a" (alexandria:flatten numbers) number)))))
+           (number hyphen number
+                   #'(lambda (begin hyphen end)
+                       (declare (ignore hyphen))
+                       (let* ((entries-to-process nil)
+                              (begin-int (parse-integer begin))
+                              (end-int (parse-integer end))
+                              (start (min begin-int end-int))
+                              (finish (max begin-int end-int)))
+                         (dolist (index (loop for n from start below (+ finish 1) collect n))
+                           (push (write-to-string index) entries-to-process))
+                         (nreverse entries-to-process))))
+           )
   (manytags tag
             (manytags tag
                       #'(lambda (manytags tag)

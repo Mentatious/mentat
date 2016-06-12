@@ -118,11 +118,6 @@
   (nth (- index 1) (find-entries-sorted)))
 
 (defun drop-entry (entry)
-  (let* ((entries (find-entries-sorted))
-         (entry-to-delete
-          (if (integerp entry)
-              (nth (- entry 1) entries)
-              entry))
-         (formatted (format-entry entry-to-delete)))
-    (cl-mongo:db.delete *current-collection-name* entry-to-delete)
+  (let ((formatted (format-entry entry)))
+    (cl-mongo:db.delete *current-collection-name* entry)
     formatted))
