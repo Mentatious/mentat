@@ -208,18 +208,50 @@
                    #'(lambda (update indexes set status entrystatus)
                        (declare (ignore update set status))
                        (update-entries (pick-entries (ensure-list indexes)) "status" entrystatus)))
+           (update last set status entrystatus
+                   #'(lambda (update last set status entrystatus)
+                       (declare (ignore update last set status))
+                       (update-entries *last-query-result* "status" entrystatus)))
+           (update last numbers set status entrystatus
+                   #'(lambda (update last indexes set status entrystatus)
+                       (declare (ignore update last set status))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "status" entrystatus)))
            (update numbers set tags colon manytags
                    #'(lambda (update indexes set tags colon manytags)
                        (declare (ignore update set tags colon))
                        (update-entries (pick-entries (ensure-list indexes)) "tags" (ensure-list manytags))))
+           (update last set tags colon manytags
+                   #'(lambda (update last set tags colon manytags)
+                       (declare (ignore update last set tags colon))
+                       (update-entries *last-query-result* "tags" (ensure-list manytags))))
+           (update last numbers set tags colon manytags
+                   #'(lambda (update last indexes set tags colon manytags)
+                       (declare (ignore update last set tags colon))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "tags" (ensure-list manytags))))
            (update numbers set tags none
                    #'(lambda (update indexes set tags none)
                        (declare (ignore update set tags none))
                        (update-entries (pick-entries (ensure-list indexes)) "tags" nil)))
+           (update last set tags none
+                   #'(lambda (update last set tags none)
+                       (declare (ignore update last set tags none))
+                       (update-entries *last-query-result* "tags" nil)))
+           (update last numbers set tags none
+                   #'(lambda (update last indexes set tags none)
+                       (declare (ignore update last set tags none))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "tags" nil)))
            (update numbers set priority prio
                    #'(lambda (update indexes set priority prio)
                        (declare (ignore update set priority))
                        (update-entries (pick-entries (ensure-list indexes)) "priority" prio)))
+           (update last set priority prio
+                   #'(lambda (update last set priority prio)
+                       (declare (ignore update last set priority))
+                       (update-entries *last-query-result* "priority" prio)))
+           (update last numbers set priority prio
+                   #'(lambda (update last indexes set priority prio)
+                       (declare (ignore update last set priority))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "priority" prio)))
            (search priority prio
                    #'(lambda (search priority prio)
                        (declare (ignore search priority))
