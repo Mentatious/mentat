@@ -202,8 +202,12 @@
                                 (format nil "No last query results.")))))
            (update number set heading entrydata
                    #'(lambda (update index set heading entrydata)
-                       (declare (ignore update set))
+                       (declare (ignore update set heading))
                        (update-entries (pick-entries (ensure-list index)) "heading" entrydata)))
+           (update last number set heading entrydata
+                   #'(lambda (update last index set heading entrydata)
+                       (declare (ignore update last set heading))
+                       (update-entries (pick-entries (ensure-list index) :last-query t) "heading" entrydata)))
            (update numbers set status entrystatus
                    #'(lambda (update indexes set status entrystatus)
                        (declare (ignore update set status))
