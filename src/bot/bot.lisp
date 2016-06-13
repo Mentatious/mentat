@@ -174,7 +174,7 @@
                           (let ((entries *last-query-result*))
                             (if (> (length entries) 0)
                                 (format nil "entries:~{~%~a~}" (print-entries entries))
-                                (format nil "No entries found.")))))
+                                (format nil "No last query results.")))))
            (drop numbers #'(lambda (drop indexes)
                              (declare (ignore drop))
                              (let ((dropped-messages-list nil))
@@ -189,7 +189,7 @@
                                   (dolist (entry *last-query-result*)
                                     (push (drop-entry entry) dropped-messages-list))
                                   (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
-                                (format nil "No last query results, nothong to drop.")))))
+                                (format nil "No last query results.")))))
            (drop last numbers
                  #'(lambda (drop last indexes)
                           (declare (ignore drop last))
@@ -199,7 +199,7 @@
                                   (dolist (entry (pick-entries (ensure-list indexes) :last-query t))
                                     (push (drop-entry entry) dropped-messages-list))
                                   (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
-                                (format nil "No last query results, nothong to drop.")))))
+                                (format nil "No last query results.")))))
            (update number set heading entrydata
                    #'(lambda (update index set heading entrydata)
                        (declare (ignore update set))
