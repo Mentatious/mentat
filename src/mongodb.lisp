@@ -115,10 +115,15 @@
            (concatenate 'string "* " (format-entry doc))
            (concatenate 'string (write-to-string i) ") " (format-entry doc)))))
 
-(defun pick-entry (index)
-  (nth (- index 1) (find-entries-sorted)))
+(defun pick-entry (index &key (last-query nil))
+  (let ((entries
+         (if last-query
+             *last-query-result*
+             (find-entries-sorted))))
+    (nth (- index 1) entries)))
 
 (defun drop-entry (entry)
   (let ((formatted (format-entry entry)))
     (cl-mongo:db.delete *current-collection-name* entry)
+    (setf *last-query-result* (remove entry *last-query-result*))
     formatted))

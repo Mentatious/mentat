@@ -65,10 +65,10 @@
       (list var)))
 
 ;;FIXME: do not cherry-pick entries in batch
-(defun pick-entries (numbers)
+(defun pick-entries (numbers &key (last-query nil))
   (let ((entries-to-process nil))
     (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
-             (push (pick-entry entry) entries-to-process))
+             (push (pick-entry entry :last-query last-query) entries-to-process))
     (when entries-to-process
       (nreverse entries-to-process))))
 
@@ -187,6 +187,16 @@
                             (if *last-query-result*
                                 (progn
                                   (dolist (entry *last-query-result*)
+                                    (push (drop-entry entry) dropped-messages-list))
+                                  (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
+                                (format nil "No last query results, nothong to drop.")))))
+           (drop last numbers
+                 #'(lambda (drop last indexes)
+                          (declare (ignore drop last))
+                          (let ((dropped-messages-list nil))
+                            (if *last-query-result*
+                                (progn
+                                  (dolist (entry (pick-entries (ensure-list indexes) :last-query t))
                                     (push (drop-entry entry) dropped-messages-list))
                                   (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
                                 (format nil "No last query results, nothong to drop.")))))
