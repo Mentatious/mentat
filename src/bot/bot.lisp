@@ -68,19 +68,24 @@
 (defun pick-entries (numbers &key (last-query nil))
   (let ((entries-to-process nil))
     (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
-             (push (pick-entry entry :last-query last-query) entries-to-process))
+      (let ((picked-entry (pick-entry entry :last-query last-query)))
+        (when picked-entry
+          (push picked-entry entries-to-process))))
     (when entries-to-process
       (nreverse entries-to-process))))
 
 (defun update-entries (entries field value)
   (let ((result-messages nil))
-    (dolist (entry entries)
-      (let ((before (format-entry entry)))
-        (set-entry-field entry field value)
-        (push
-         (format nil "Updated-----------~%before: '~a'~%after : '~a'" before (format-entry entry))
-         result-messages)))
-    (format nil "~{~%~a~}" (nreverse result-messages))))
+    (if entries
+        (progn
+          (dolist (entry entries)
+            (let ((before (format-entry entry)))
+              (set-entry-field entry field value)
+              (push
+               (format nil "Updated-----------~%before: '~a'~%after : '~a'" before (format-entry entry))
+               result-messages)))
+          (format nil "~{~%~a~}" (nreverse result-messages)))
+        (format nil "No entries to update."))))
 
 (cl-lex:define-string-lexer bot-lexer
   ("\"[А-Яа-яA-Za-z0-9ё_.,\%\&\-/|><\:\;\'\=\(\)\*\?\#\№\@\`\!\ ]+\""
