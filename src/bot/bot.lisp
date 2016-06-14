@@ -205,14 +205,18 @@
                                     (push (drop-entry entry) dropped-messages-list))
                                   (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
                                 (format nil "No last query results.")))))
-           (update number set heading entrydata
-                   #'(lambda (update index set heading entrydata)
+           (update numbers set heading entrydata
+                   #'(lambda (update indexes set heading entrydata)
                        (declare (ignore update set heading))
-                       (update-entries (pick-entries (ensure-list index)) "heading" entrydata)))
-           (update last number set heading entrydata
-                   #'(lambda (update last index set heading entrydata)
+                       (if (listp indexes)
+                           (format nil "Cannot update headings in batch.")
+                           (update-entries (pick-entries (ensure-list indexes)) "heading" entrydata))))
+           (update last numbers set heading entrydata
+                   #'(lambda (update last indexes set heading entrydata)
                        (declare (ignore update last set heading))
-                       (update-entries (pick-entries (ensure-list index) :last-query t) "heading" entrydata)))
+                       (if (listp indexes)
+                           (format nil "Cannot update headings in batch.")
+                           (update-entries (pick-entries (ensure-list indexes) :last-query t) "heading" entrydata))))
            (update numbers set status entrystatus
                    #'(lambda (update indexes set status entrystatus)
                        (declare (ignore update set status))
