@@ -1,0 +1,40 @@
+- include: preprocess.yaml
+
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: build xmpp binary
+      shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image-xmpp-bot)\""
+
+- hosts: botservers
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: remove old xmpp remote binary
+      file:
+        path=/home/{{ username }}/{{ xmpp_binary_name }}
+        state=absent
+
+    - name: copy compiled xmpp binary to remote server
+      copy: src=../deploy/{{ xmpp_binary_name }} dest=/home/{{ username }}
+
+    - name: copy xmpp logrotate config to remote server
+      copy:
+        src=../conf/mentat-xmpp-bot.logrotate
+        dest=/etc/logrotate.d/mentat-xmpp-bot
+        mode=0644
+      sudo: yes
+
+    - name: set xmpp binary attrs
+      file: path=/home/{{ username }}/{{ xmpp_binary_name }} mode=u+rwx
+
+    - name: restart mentat-xmpp service on remote server
+      supervisorctl: name=mentat-xmpp state=restarted
+      sudo: yes
+
+- include: postprocess.yaml

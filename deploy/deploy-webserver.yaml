@@ -1,0 +1,40 @@
+- include: preprocess.yaml
+
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: build webserver binary
+      shell: "sbcl --eval \"(ql:quickload 'mentat-webserver)\" --eval \"(mentat-webserver::save-image-webserver)\""
+
+- hosts: botservers
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: remove old webserver remote binary
+      file:
+        path=/home/{{ username }}/{{ webserver_binary_name }}
+        state=absent
+
+    - name: copy compiled webserver binary to remote server
+      copy: src=../deploy/{{ webserver_binary_name }} dest=/home/{{ username }}
+
+    - name: set webserver binary attrs
+      file: path=/home/{{ username }}/{{ webserver_binary_name }} mode=u+rwx
+
+    - name: restart mentat-webserver service on remote server
+      supervisorctl: name=mentat-webserver state=restarted
+      sudo: yes
+
+- hosts: localhost
+
+  tasks:
+
+    - name: cleanup supervisor conf file
+      file: path=./supervisor.conf state=absent
+
+- include: postprocess.yaml

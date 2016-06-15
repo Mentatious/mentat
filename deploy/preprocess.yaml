@@ -1,0 +1,36 @@
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: instantiate supervisor conf template
+      template: src=../conf/supervisor.conf dest=./supervisor.conf
+
+- hosts: botservers
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: install packages on remote server
+      apt: name={{ item }} state=present
+      with_items:
+        - mongodb
+        - supervisor
+        - logrotate
+      sudo: yes
+
+    - name: check if supervisor daemon is running
+      service: name=supervisor state=started
+      sudo: yes
+
+    - name: check if mongodb is up and running on remote server
+      service: name=mongodb state=started
+      sudo: yes
+
+    - name: copy supervisor conf
+      copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ supervisor_conf }}
+      sudo: yes
+
+    - name: copy mentat config to remote server
+      copy: src=../src/config.lisp dest=/home/{{ username }}
