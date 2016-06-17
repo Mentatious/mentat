@@ -141,23 +141,23 @@
                        (format nil "Sorting by: ~a" *sortby-criterion*)))
            (sortby id
                    #'(lambda (sortby id)
-                       (declare (ignore sortby))
+                       (declare (ignore sortby id))
                        (setf *sortby-criterion* "id")))
            (sortby status
                    #'(lambda (sortby status)
-                       (declare (ignore sortby))
+                       (declare (ignore sortby status))
                        (setf *sortby-criterion* "status")))
            (sortby priority
                    #'(lambda (sortby priority)
-                       (declare (ignore sortby))
+                       (declare (ignore sortby priority))
                        (setf *sortby-criterion* "priority")))
            (sortby heading
                    #'(lambda (sortby heading)
-                       (declare (ignore sortby))
+                       (declare (ignore sortby heading))
                        (setf *sortby-criterion* "heading")))
            (sortby ts
                    #'(lambda (sortby ts)
-                       (declare (ignore sortby))
+                       (declare (ignore sortby ts))
                        (setf *sortby-criterion* "ts_added")))
            (print all #'(lambda (print all)
                           (declare (ignore print all))
@@ -186,7 +186,7 @@
                                (dolist (entry (pick-entries (ensure-list indexes)))
                                  (push (drop-entry entry) dropped-messages-list))
                                (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
-           (drop last #'(lambda (drop indexes)
+           (drop last #'(lambda (drop last)
                           (declare (ignore drop last))
                           (let ((dropped-messages-list nil))
                             (if *last-query-result*
@@ -267,14 +267,14 @@
                        (update-entries (pick-entries (ensure-list indexes) :last-query t) "priority" prio)))
            (search priority prio
                    #'(lambda (search priority prio)
-                       (declare (ignore search priority))
+                       (declare (ignore search))
                        (let ((entries (list-entries :field priority :value prio)))
                          (if (> (length entries) 0)
                              (format nil "entries:~{~%~a~}" (print-entries entries))
                              (format nil "No entries found.")))))
            (search heading entrydata
                    #'(lambda (search heading entrydata)
-                       (declare (ignore search heading))
+                       (declare (ignore search))
                        (let ((entries (list-entries :field heading :value entrydata)))
                          (if (> (length entries) 0)
                              (format nil "entries:~{~%~a~}" (print-entries entries))
