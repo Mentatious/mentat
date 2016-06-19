@@ -125,10 +125,10 @@
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (entrydata hyphen number colon tag tags none schedule unschedule
-               deadline undeadline pick date time add print all org raw sortby
-               what id status priority heading ts update set drop cleardb usage
-               entrystatus search prio last))
+  (:terminals (add all cleardb colon date deadline drop entrydata entrystatus heading
+               hyphen id last none number org pick print prio priority raw schedule
+               search set sortby status tag tags time ts undeadline unschedule update
+               usage what))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
