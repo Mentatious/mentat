@@ -12,6 +12,7 @@
                #:cxml
                #:cl-lex
                #:yacc
+               #:local-time
                #:swank)
   :serial t
   :components ((:file "bot/package")

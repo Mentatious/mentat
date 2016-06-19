@@ -12,23 +12,24 @@
   (setf *current-collection-name*
         (concatenate 'string *entries-collection-prefix* "-" username)))
 
-(defun add-entry (heading &key (status "") (priority "") (timestamp "") (tags nil))
+(defun add-entry (heading &key (status "") (priority "") (tags nil) (scheduled nil) (deadline nil))
   (with-check-connection
     (let ((doc (cl-mongo:make-document))
           (ts_added (get-universal-time)))
       (when (> (length status) 0) (cl-mongo:add-element "status" (string-trim '(#\Space) status) doc))
       (when (> (length priority) 0) (cl-mongo:add-element "priority" (string-trim '(#\Space) priority) doc))
       (when (> (length heading) 0) (cl-mongo:add-element "heading" (string-trim '(#\Space) heading) doc))
-      (when (> (length timestamp) 0) (cl-mongo:add-element "timestamp" (string-trim '(#\Space) timestamp) doc))
       (when (> (length tags) 0) (cl-mongo:add-element "tags" tags doc))
+      (when scheduled (cl-mongo:add-element "scheduled" scheduled doc))
+      (when deadline (cl-mongo:add-element "deadline" deadline doc))
       (cl-mongo:add-element "ts_added" (write-to-string ts_added) doc)
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
 (defun set-entry-field (entry field value)
-  (if (listp value)
-      (cl-mongo:add-element field value entry)
-      (cl-mongo:add-element field (string-trim '(#\Space) value) entry))
+  (cond ((listp value) (cl-mongo:add-element field value entry))
+        ((stringp value) (cl-mongo:add-element field (string-trim '(#\Space) value) entry))
+        (t (cl-mongo:add-element field value entry)))
   (cl-mongo:db.save *current-collection-name* entry))
 
 (defun clear-entries ()
@@ -40,9 +41,11 @@
         (priority (cl-mongo:get-element "priority" doc))
         (heading (cl-mongo:get-element "heading" doc))
         (timestamp (cl-mongo:get-element "timestamp" doc))
-        (tags (cl-mongo:get-element "tags" doc)))
+        (tags (cl-mongo:get-element "tags" doc))
+        (scheduled (cl-mongo:get-element "scheduled" doc))
+        (deadline (cl-mongo:get-element "deadline" doc)))
     (string-right-trim
-     " " (format nil "~a~a~a~a~a"
+     " " (format nil "~a~a~a~a~a~a~a"
                  (if status
                      (concatenate 'string (string-upcase status) " ")
                      "")
@@ -56,7 +59,13 @@
                      (concatenate 'string timestamp " ")
                      "")
                  (if tags
-                     (format nil ":~{~a:~}" tags)
+                     (format nil ":~{~a:~} " tags)
+                     "")
+                 (if scheduled
+                     (concatenate 'string (format-timestamp scheduled :as-scheduled t) " ")
+                     "")
+                 (if deadline
+                     (format-timestamp deadline :as-deadline t)
                      "")))))
 
 (defparameter *sortby-criterion* "ts_added")

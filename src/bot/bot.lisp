@@ -13,9 +13,17 @@
 (defparameter *xmpp-resource* nil
   "xmpp resource")
 
+;; TODO: provide setting up timezone info on per-user basis
+;; (HINT: use bot commands + persistent storage, same as `sortby', for example)
+(defparameter *client-timezone* nil
+  "Timezone to keep user timestamps within")
+
 (defparameter *errors* nil)
 (defparameter *connection* nil
   "XMPP connection")
+
+(defparameter *timezone-repository-system-path* "/usr/share/zoneinfo/")
+
 
 #+sbcl
 (defun main-xmpp-bot ()
@@ -26,6 +34,9 @@
      :style swank:*communication-style*
      :dont-close t)
     (load-config)
+    (local-time:reread-timezone-repository
+     :timezone-repository (pathname *timezone-repository-system-path*))
+    (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name *client-timezone*))
     (init-storage)
     (connect)))
 
@@ -35,18 +46,6 @@
                             :compression t
                             :executable t
                             :toplevel #'main-xmpp-bot))
-
-(defun starts-with-nick (nick msg)
-  (check-type nick string)
-  (check-type msg string)
-  (multiple-value-bind (starts rest)
-      (alexandria:starts-with-subseq nick (trim msg)
-                                     :return-suffix t)
-    (when starts
-      (let ((rest2 (trim rest)))
-        (case (aref rest2 0)
-          ((#\: #\,) (trim (subseq rest2 1)))
-          (t rest2))))))
 
 ;;TODO: automate
 (defparameter *usage*
@@ -58,11 +57,6 @@
     "drop <number>-<number> - specify range of entry numbers to delete"
     "cleardb - wipe database"
     "usage - print this reference"))
-
-(defun ensure-list (var)
-  (if (listp var)
-      var
-      (list var)))
 
 ;;FIXME: do not cherry-pick entries in batch
 (defun pick-entries (numbers &key (last-query nil))
@@ -92,6 +86,13 @@
    (return (values 'entrydata
                    (string-trim "\"" $@))))
   ("\-" (return (values 'hyphen $@)))
+  ("schedule" (return (values 'schedule $@)))
+  ("unschedule" (return (values 'unschedule $@)))
+  ("deadline" (return (values 'deadline $@)))
+  ("undeadline" (return (values 'undeadline $@)))
+  ("pick" (return (values 'pick $@)))
+  ("[0-9]{2}-[0-9]{2}-[0-9]{4}" (return (values 'date $@)))
+  ("[0-9]{2}:[0-9]{2}" (return (values 'time $@)))
   ("[0-9]+" (return (values 'number $@)))
   ("^[Aa]dd" (return (values 'add $@)))
   ("^[Pp]rint" (return (values 'print $@)))
@@ -124,9 +125,10 @@
 
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (entrydata hyphen number colon tag tags none
-               add print all org raw sortby what id status priority heading ts
-               update set drop cleardb usage entrystatus search prio last))
+  (:terminals (entrydata hyphen number colon tag tags none schedule unschedule
+               deadline undeadline pick date time add print all org raw sortby
+               what id status priority heading ts update set drop cleardb usage
+               entrystatus search prio last))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -265,6 +267,62 @@
                    #'(lambda (update last indexes set priority prio)
                        (declare (ignore update last set priority))
                        (update-entries (pick-entries (ensure-list indexes) :last-query t) "priority" prio)))
+           (schedule numbers pick timestamp
+                  #'(lambda (schedule indexes pick timestamp)
+                       (declare (ignore schedule pick))
+                       (update-entries (pick-entries (ensure-list indexes))
+                                       "scheduled" (make-timestamp timestamp))))
+           (unschedule numbers
+                  #'(lambda (unschedule indexes)
+                       (declare (ignore unschedule))
+                       (update-entries (pick-entries (ensure-list indexes))
+                                       "scheduled" nil)))
+           (schedule last pick timestamp
+                  #'(lambda (schedule last pick timestamp)
+                       (declare (ignore schedule last pick))
+                       (update-entries *last-query-result* "scheduled" (make-timestamp timestamp))))
+           (unschedule last
+                  #'(lambda (unschedule last)
+                       (declare (ignore unschedule))
+                       (update-entries *last-query-result* "scheduled" nil)))
+           (schedule last numbers pick timestamp
+                  #'(lambda (schedule last indexes pick timestamp)
+                       (declare (ignore schedule last pick))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                                       "scheduled" (make-timestamp timestamp))))
+           (unschedule last numbers
+                  #'(lambda (unschedule last indexes)
+                       (declare (ignore unschedule last))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                                       "scheduled" nil)))
+           (deadline numbers pick timestamp
+                  #'(lambda (deadline indexes pick timestamp)
+                       (declare (ignore deadline pick))
+                       (update-entries (pick-entries (ensure-list indexes))
+                                       "deadline" (make-timestamp timestamp))))
+           (undeadline numbers
+                  #'(lambda (undeadline indexes)
+                       (declare (ignore undeadline))
+                       (update-entries (pick-entries (ensure-list indexes))
+                                       "deadline" nil)))
+           (deadline last pick timestamp
+                  #'(lambda (deadline last pick timestamp)
+                       (declare (ignore deadline last pick))
+                       (update-entries *last-query-result* "deadline" (make-timestamp timestamp))))
+           (undeadline last
+                  #'(lambda (undeadline last)
+                       (declare (ignore undeadline last))
+                       (update-entries *last-query-result* "deadline" nil)))
+           (deadline last numbers pick timestamp
+                  #'(lambda (deadline last indexes pick timestamp)
+                       (declare (ignore deadline last pick))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                                       "deadline" (make-timestamp timestamp))))
+           (undeadline last numbers
+                  #'(lambda (undeadline last indexes)
+                       (declare (ignore undeadline last))
+                       (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                                       "deadline" nil)))
            (search priority prio
                    #'(lambda (search priority prio)
                        (declare (ignore search))
@@ -311,13 +369,14 @@
                               (finish (max begin-int end-int)))
                          (dolist (index (loop for n from start below (+ finish 1) collect n))
                            (push (write-to-string index) entries-to-process))
-                         (nreverse entries-to-process))))
-           )
+                         (nreverse entries-to-process)))))
   (manytags tag
             (manytags tag
                       #'(lambda (manytags tag)
                           (mapcar #'(lambda (tagdata) (string-right-trim ":" tagdata))
-                                  `(,@(alexandria:flatten manytags) ,tag))))))
+                                  `(,@(alexandria:flatten manytags) ,tag)))))
+  (timestamp date
+             (date time)))
 
 (defun reply-message (body)
   (handler-case
