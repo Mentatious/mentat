@@ -42,6 +42,7 @@
 
 #+sbcl
 (defun save-image-xmpp-bot ()
+  (swank-loader::init :load-contribs t)
   (sb-ext:save-lisp-and-die "mentat-xmpp-bot"
                             :compression t
                             :executable t

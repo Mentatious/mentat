@@ -13,6 +13,7 @@
 
 #+sbcl
 (defun save-image-webserver ()
+  (swank-loader::init :load-contribs t)
   (sb-ext:save-lisp-and-die "mentat-webserver"
                             :compression t
                             :executable t
