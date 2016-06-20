@@ -23,7 +23,7 @@
                                            :default-request-type :get) (username)
   (setf (hunchentoot:content-type*) "text/plain")
   (let ((mentat::*current-collection-name*
-         (concatenate 'string mentat::*entries-collection-prefix* "-" username)))
+         (concatenate 'string mentat-config::*entries-collection-prefix* "-" username)))
     (let ((entries (mentat::list-entries :as-org t)))
       (if (> (length entries) 0)
           (format nil "~{~%~a~}" entries)

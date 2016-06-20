@@ -12,6 +12,7 @@
                #:swank)
   :serial t
   :components ((:file "webserver/package")
+               (:file "parameters")
                (:file "util")
                (:file "mongodb")
                (:file "webserver/webserver")

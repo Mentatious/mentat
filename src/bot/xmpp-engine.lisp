@@ -66,16 +66,16 @@
             (cxml:with-element "history"
               (cxml:attribute "maxstanzas" max-stanzas))))))))
 
-(defun connect (&optional (login *xmpp-login*) (password *xmpp-password*)
-                &key (nick *xmpp-login*) (server *xmpp-server*))
+(defun connect (&optional (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
+                &key (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*))
   (check-type login string)
   (check-type password string)
   (setf *connection* (xmpp:connect :hostname server))
   (handler-case
       (unwind-protect
            (progn
-             (xmpp:auth *connection* login password *xmpp-resource* :mechanism :sasl-digest-md5)
-             (xmpp:bind *connection* *xmpp-resource*)
+             (xmpp:auth *connection* login password mentat-config::*xmpp-resource* :mechanism :sasl-digest-md5)
+             (xmpp:bind *connection* mentat-config::*xmpp-resource*)
              (xmpp:session *connection*)
              (xmpp:presence *connection*
                             :show "chat"

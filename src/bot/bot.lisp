@@ -1,29 +1,8 @@
 (in-package #:mentat)
 
-(defparameter *db-name* nil
-  "Mongo DB name")
-(defparameter *entries-collection-prefix* nil
-  "Mongo collection name prefix")
-(defparameter *xmpp-login* nil
-  "xmpp login")
-(defparameter *xmpp-password* nil
-  "xmpp password")
-(defparameter *xmpp-server* nil
-  "xmpp server")
-(defparameter *xmpp-resource* nil
-  "xmpp resource")
-
-;; TODO: provide setting up timezone info on per-user basis
-;; (HINT: use bot commands + persistent storage, same as `sortby', for example)
-(defparameter *client-timezone* nil
-  "Timezone to keep user timestamps within")
-
 (defparameter *errors* nil)
 (defparameter *connection* nil
   "XMPP connection")
-
-(defparameter *timezone-repository-system-path* "/usr/share/zoneinfo/")
-
 
 #+sbcl
 (defun main-xmpp-bot ()
@@ -35,8 +14,8 @@
      :dont-close t)
     (load-config)
     (local-time:reread-timezone-repository
-     :timezone-repository (pathname *timezone-repository-system-path*))
-    (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name *client-timezone*))
+     :timezone-repository (pathname mentat-config::*timezone-repository-system-path*))
+    (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name mentat-config::*client-timezone*))
     (init-storage)
     (connect)))
 

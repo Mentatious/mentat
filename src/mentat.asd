@@ -16,6 +16,7 @@
                #:swank)
   :serial t
   :components ((:file "bot/package")
+               (:file "parameters")
                (:file "util")
                (:file "mongodb" )
                (:file "bot/xmpp-engine")

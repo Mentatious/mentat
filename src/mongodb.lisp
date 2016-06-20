@@ -2,7 +2,7 @@
 
 (defun init-storage ()
   (with-check-connection
-    (cl-mongo:db.use *db-name*)))
+    (cl-mongo:db.use mentat-config::*db-name*)))
 
 (defparameter *current-collection-name* nil)
 
@@ -10,7 +10,7 @@
 
 (defun set-collection-name-by-user (username)
   (setf *current-collection-name*
-        (concatenate 'string *entries-collection-prefix* "-" username)))
+        (concatenate 'string mentat-config::*entries-collection-prefix* "-" username)))
 
 (defun add-entry (heading &key (status "") (priority "") (tags nil) (scheduled nil) (deadline nil))
   (with-check-connection
