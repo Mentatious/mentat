@@ -17,7 +17,7 @@
      :timezone-repository (pathname mentat-config::*timezone-repository-system-path*))
     (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name mentat-config::*client-timezone*))
     (init-storage)
-    (connect)))
+    (start-connection-loop *connection*)))
 
 #+sbcl
 (defun save-image-xmpp-bot ()

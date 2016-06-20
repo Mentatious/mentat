@@ -66,39 +66,49 @@
             (cxml:with-element "history"
               (cxml:attribute "maxstanzas" max-stanzas))))))))
 
-(defun connect (&optional (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
-                &key (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*))
+(defun start-connection-loop (connection-obj &optional (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
+                    &key (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*) (resource mentat-config::*xmpp-resource*))
   (check-type login string)
   (check-type password string)
-  (setf *connection* (xmpp:connect :hostname server))
+  (setf connection-obj (xmpp:connect :hostname server))
   (handler-case
       (unwind-protect
            (progn
-             (xmpp:auth *connection* login password mentat-config::*xmpp-resource* :mechanism :sasl-digest-md5)
-             (xmpp:bind *connection* mentat-config::*xmpp-resource*)
-             (xmpp:session *connection*)
-             (xmpp:presence *connection*
+             (xmpp:auth connection-obj login password resource :mechanism :sasl-digest-md5)
+             (xmpp:bind connection-obj resource)
+             (xmpp:session connection-obj)
+             (xmpp:presence connection-obj
                             :show "chat"
                             :status "online")
              (xmpp:receive-stanza-loop
-              *connection*
+              connection-obj
               :stanza-callback #'callback-with-restart))
-        (xmpp:disconnect *connection*))
+        (xmpp:disconnect connection-obj))
     (error (e)
       (progn
-        (format t "~&XMPP ERROR: ~a" e)
+        (format xmpp:*debug-stream* "~&XMPP ERROR: ~a" e)
         (push (make-user-error) *errors*)
         (sleep 5)
         (connect login password :nick nick :server server)))))
 
-(defun start-loop ()
-  (xmpp:receive-stanza-loop *connection*))
-
-(defun send (to msg)
-  (xmpp:message *connection* to msg))
-
-(defun get-stanza ()
-  (xmpp:receive-stanza *connection*))
+(defun connect-and-send (to body &optional (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
+                    &key (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*) (resource mentat-config::*xmpp-resource*))
+  (check-type login string)
+  (check-type password string)
+  (let (connection-obj)
+    (setf connection-obj (xmpp:connect :hostname server))
+    (handler-case
+        (unwind-protect
+             (progn
+               (xmpp:auth connection-obj login password resource :mechanism :sasl-digest-md5)
+               (xmpp:bind connection-obj resource)
+               (xmpp:session connection-obj)
+               (xmpp:message connection-obj to body))
+          (xmpp:disconnect connection-obj))
+      (error (e)
+        (progn
+          (format xmpp:*debug-stream* "~&XMPP ERROR: ~a" e)
+          (push (make-user-error) *errors*))))))
 
 (defun process-message (connection message)
   (unless (search (concatenate 'string "/" (xmpp:username connection))
