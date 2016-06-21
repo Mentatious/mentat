@@ -35,6 +35,21 @@
 (defun get-entry-field (entry field)
   (cl-mongo:get-element field entry))
 
+(defparameter *mentat-db-prefix* "mentat.")
+
+(defun get-user-collection-names ()
+  (mapcar #'(lambda (name) (subseq name (length *mentat-db-prefix*)))
+          (remove-if
+           #'(lambda (str)
+               (or (search "$_id_" str :from-end t)
+                   ;; FIXME: *headings should be remove from DB and hence from here as it's an dev artifact ;)
+                   (member str (mapcar #'(lambda (name) (concatenate 'string *mentat-db-prefix* name))
+                                       '("system.indexes" "headings"))
+                           :test #'equal)))
+           (mapcar #'(lambda (coll)
+                       (cl-mongo::get-element "name" coll))
+                   (cl-mongo:docs (cl-mongo:db.collections))))))
+
 (defun clear-entries ()
   (with-check-connection
     (cl-mongo:rm *current-collection-name* :all)))
@@ -112,6 +127,29 @@
             (lambda (doc)
               (intersection (cl-mongo:get-element field doc) value :test #'equalp))) docs-ordered)
           docs-ordered))))
+
+(defun find-entries-nonempty-field (collection field)
+  (with-check-connection
+    (cl-mongo:docs
+     (cl-mongo:iter
+      (cl-mongo:db.find
+       collection
+       (cl-mongo:kv
+        (cl-mongo:kv
+         "query"
+         (cl-mongo:$!= field nil))) :limit 0)))))
+
+(defun find-timestamped-entries (collection)
+  (union
+   (find-entries-nonempty-field collection "scheduled")
+   (find-entries-nonempty-field collection "deadline")))
+
+(defun find-all-timestamped-entries-by-collection ()
+  (let ((all-entries (make-hash-table :test #'equal)))
+    (dolist (user-collection (get-user-collection-names))
+      (setf (gethash user-collection all-entries)
+            (find-timestamped-entries user-collection)))
+    all-entries))
 
 (defun list-entries (&key (field nil) (value nil))
   (with-check-connection
