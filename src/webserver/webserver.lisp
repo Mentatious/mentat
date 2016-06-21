@@ -27,9 +27,8 @@
 (hunchentoot:define-easy-handler (test-uri :uri "/mentat.org"
                                            :default-request-type :get) (username)
   (setf (hunchentoot:content-type*) "text/plain")
-  (let ((mentat::*current-collection-name*
-         (concatenate 'string mentat-config::*entries-collection-prefix* "-" username)))
-    (let ((entries (mentat::list-entries :as-org t)))
-      (if (> (length entries) 0)
-          (format nil "~{~%~a~}" entries)
-          (format nil "No entries found.")))))
+  (mentat::set-collection-name-by-user username)
+  (let ((entries (mentat::print-entries (mentat::list-entries) :as-org t)))
+    (if (> (length entries) 0)
+        (format nil "~{~%~a~}" entries)
+        (format nil "No entries found."))))
