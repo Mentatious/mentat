@@ -2,6 +2,11 @@
 
 #+sbcl
 (defun webserver-main ()
+  (setq swank:*use-dedicated-output-stream* nil)
+  (swank:create-server
+   :port 4007
+   :style swank:*communication-style*
+   :dont-close t)
   (mentat::load-config)
   (mentat::init-storage)
   (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 4242))
