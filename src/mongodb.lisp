@@ -32,18 +32,21 @@
         (t (cl-mongo:add-element field value entry)))
   (cl-mongo:db.save *current-collection-name* entry))
 
+(defun get-entry-field (entry field)
+  (cl-mongo:get-element field entry))
+
 (defun clear-entries ()
   (with-check-connection
     (cl-mongo:rm *current-collection-name* :all)))
 
 (defun format-entry (doc)
-  (let ((status (cl-mongo:get-element "status" doc))
-        (priority (cl-mongo:get-element "priority" doc))
-        (heading (cl-mongo:get-element "heading" doc))
-        (timestamp (cl-mongo:get-element "timestamp" doc))
-        (tags (cl-mongo:get-element "tags" doc))
-        (scheduled (cl-mongo:get-element "scheduled" doc))
-        (deadline (cl-mongo:get-element "deadline" doc)))
+  (let ((status (get-entry-field doc "status"))
+        (priority (get-entry-field doc "priority"))
+        (heading (get-entry-field doc "heading"))
+        (timestamp (get-entry-field doc "timestamp"))
+        (tags (get-entry-field doc "tags"))
+        (scheduled (get-entry-field doc "scheduled"))
+        (deadline (get-entry-field doc "deadline")))
     (string-right-trim
      " " (format nil "~a~a~a~a~a~a~a"
                  (if status
