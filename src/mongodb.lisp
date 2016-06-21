@@ -147,7 +147,7 @@
 (defun find-all-timestamped-entries-by-collection ()
   (let ((all-entries (make-hash-table :test #'equal)))
     (dolist (user-collection (get-user-collection-names))
-      (setf (gethash user-collection all-entries)
+      (setf (gethash (subseq user-collection (length "entries-")) all-entries)
             (find-timestamped-entries user-collection)))
     all-entries))
 
