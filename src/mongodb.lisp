@@ -110,7 +110,7 @@
               (intersection (cl-mongo:get-element field doc) value :test #'equalp))) docs-ordered)
           docs-ordered))))
 
-(defun list-entries (&key (as-org nil) (field nil) (value nil))
+(defun list-entries (&key (field nil) (value nil))
   (with-check-connection
       (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field :value value))
                            (t (find-entries-sorted :field field :value value)))))
