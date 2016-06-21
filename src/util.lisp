@@ -74,3 +74,13 @@
   (if (listp var)
       var
       (list var)))
+
+(defun timestamp-in-future-p (timestamp)
+  (local-time:timestamp>
+   (local-time:universal-to-timestamp timestamp)
+   (local-time:adjust-timestamp (local-time:now) (:offset :hour -1))))
+
+(defun adjust-universal-timestamp (timestamp &key (offset-hours 1))
+  (local-time:timestamp-to-universal
+   (local-time:adjust-timestamp
+       (local-time:universal-to-timestamp timestamp) (:offset :hour offset-hours))))

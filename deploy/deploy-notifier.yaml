@@ -1,0 +1,33 @@
+- include: preprocess.yaml
+
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: build notifier binary
+      shell: "sbcl --eval \"(ql:quickload 'mentat-notifier)\" --eval \"(mentat-notifier::save-image-notifier)\""
+
+- hosts: botservers
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: remove old notifier remote binary
+      file:
+        path=/home/{{ username }}/{{ notifier_binary_name }}
+        state=absent
+
+    - name: copy compiled notifier binary to remote server
+      copy: src=../deploy/{{ notifier_binary_name }} dest=/home/{{ username }}
+
+    - name: set notifier binary attrs
+      file: path=/home/{{ username }}/{{ notifier_binary_name }} mode=u+rwx
+
+    - name: restart mentat-notifier service on remote server
+      supervisorctl: name=mentat-notifier state=restarted
+      sudo: yes
+
+- include: postprocess.yaml
