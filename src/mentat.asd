@@ -13,6 +13,7 @@
                #:cl-lex
                #:yacc
                #:local-time
+               #:uuid
                #:swank)
   :serial t
   :components ((:file "bot/package")

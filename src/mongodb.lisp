@@ -23,6 +23,7 @@
       (when scheduled (set-entry-field doc "scheduled" scheduled :save-entry nil))
       (when deadline (set-entry-field doc "deadline" deadline :save-entry nil))
       (set-entry-field doc "ts_added" (write-to-string ts_added) :save-entry nil)
+      (set-entry-field doc "entry_id" (uuid::print-object (uuid:make-v4-uuid) nil))
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
