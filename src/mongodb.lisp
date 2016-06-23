@@ -16,21 +16,23 @@
   (with-check-connection
     (let ((doc (cl-mongo:make-document))
           (ts_added (get-universal-time)))
-      (when (> (length status) 0) (cl-mongo:add-element "status" (string-trim '(#\Space) status) doc))
-      (when (> (length priority) 0) (cl-mongo:add-element "priority" (string-trim '(#\Space) priority) doc))
-      (when (> (length heading) 0) (cl-mongo:add-element "heading" (string-trim '(#\Space) heading) doc))
-      (when (> (length tags) 0) (cl-mongo:add-element "tags" tags doc))
-      (when scheduled (cl-mongo:add-element "scheduled" scheduled doc))
-      (when deadline (cl-mongo:add-element "deadline" deadline doc))
-      (cl-mongo:add-element "ts_added" (write-to-string ts_added) doc)
+      (when (> (length status) 0) (set-entry-field doc "status" status :save-entry nil))
+      (when (> (length priority) 0) (set-entry-field doc "priority" priority :save-entry nil))
+      (when (> (length heading) 0) (set-entry-field doc "heading" heading :save-entry nil))
+      (when (> (length tags) 0) (set-entry-field doc "tags" tags :save-entry nil))
+      (when scheduled (set-entry-field doc "scheduled" scheduled :save-entry nil))
+      (when deadline (set-entry-field doc "deadline" deadline :save-entry nil))
+      (set-entry-field doc "ts_added" (write-to-string ts_added) :save-entry nil)
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
-(defun set-entry-field (entry field value)
+
+(defun set-entry-field (entry field value &key (save-entry t))
   (cond ((listp value) (cl-mongo:add-element field value entry))
         ((stringp value) (cl-mongo:add-element field (string-trim '(#\Space) value) entry))
         (t (cl-mongo:add-element field value entry)))
-  (cl-mongo:db.save *current-collection-name* entry))
+  (when save-entry
+    (cl-mongo:db.save *current-collection-name* entry)))
 
 (defun get-entry-field (entry field)
   (cl-mongo:get-element field entry))
