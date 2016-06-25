@@ -91,8 +91,8 @@
         (sleep 5)
         (connect login password :nick nick :server server)))))
 
-(defun connect-and-send (to body &optional (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
-                    &key (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*) (resource mentat-config::*xmpp-resource*))
+(defun connect-and-send (to body &key (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
+                                   (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*) (resource mentat-config::*xmpp-resource*))
   (check-type login string)
   (check-type password string)
   (let (connection-obj)
