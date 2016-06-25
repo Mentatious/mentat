@@ -139,10 +139,12 @@
          "query"
          (cl-mongo:$!= field nil))) :limit 0)))))
 
-(defun find-timestamped-entries (collection)
-  (union
-   (find-entries-nonempty-field collection "scheduled")
-   (find-entries-nonempty-field collection "deadline")))
+(defun find-timestamped-entries (&optional (collection *current-collection-name*))
+  (let ((results (union
+                  (find-entries-nonempty-field collection "scheduled")
+                  (find-entries-nonempty-field collection "deadline"))))
+    (setf *last-query-result* results)
+    results))
 
 (defun find-all-timestamped-entries-by-collection ()
   (let ((all-entries (make-hash-table :test #'equal)))
