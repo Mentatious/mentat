@@ -146,10 +146,17 @@
       (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
       docs-ordered)))
 
-(defun find-timestamped-entries (&optional (collection *current-collection-name*))
+(defun find-timestamped-entries (&key (collection *current-collection-name*) (today nil))
   (let ((results (union
                   (find-entries-nonempty-field collection "scheduled")
                   (find-entries-nonempty-field collection "deadline"))))
+    (when today
+      (setf results
+            (remove-if
+             (complement #'(lambda (entry)
+                             (or (timestamp-is-today-p (get-entry-field entry "scheduled"))
+                                 (timestamp-is-today-p (get-entry-field entry "deadline")))))
+             results)))
     (setf *last-query-result* results)
     results))
 
@@ -157,7 +164,7 @@
   (let ((all-entries (make-hash-table :test #'equal)))
     (dolist (user-collection (get-user-collection-names))
       (setf (gethash (subseq user-collection (length "entries-")) all-entries)
-            (find-timestamped-entries user-collection)))
+            (find-timestamped-entries :collection user-collection)))
     all-entries))
 
 (defun list-entries (&key (field nil) (value nil))

@@ -78,9 +78,25 @@
 (defun timestamp-in-future-p (timestamp)
   (local-time:timestamp>
    (local-time:universal-to-timestamp timestamp)
-   (local-time:adjust-timestamp (local-time:now) (:offset :hour -1))))
+   (local-time:adjust-timestamp (local-time:now) (:offset :hour -1)))) ;TODO: make offset an explicit paramater
 
-(defun adjust-universal-timestamp (timestamp &key (offset-hours 1))
+(defun adjust-universal-timestamp (timestamp &key (offset-hours 0) (offset-days 0))
   (local-time:timestamp-to-universal
    (local-time:adjust-timestamp
-       (local-time:universal-to-timestamp timestamp) (:offset :hour offset-hours))))
+       (local-time:universal-to-timestamp timestamp)
+     (offset :hour offset-hours)
+     (offset :day offset-days))))
+
+(defun timestamp-is-today-p (timestamp)
+  (when timestamp
+    (let* ((today-ts (local-time:adjust-timestamp (local-time:today) (offset :hour 1))) ;TODO: make offset an explicit paramater
+           (tomorrow-ts
+            (local-time:adjust-timestamp today-ts
+              (offset :hour 1)
+              (offset :day 1)))) ;FIXME: find how to convert from GMT to timezone
+      (and (local-time:timestamp>
+            (local-time:universal-to-timestamp timestamp)
+            today-ts)
+           (local-time:timestamp<=
+            (local-time:universal-to-timestamp timestamp)
+            tomorrow-ts)))))

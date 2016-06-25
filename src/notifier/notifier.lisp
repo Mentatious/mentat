@@ -53,7 +53,7 @@
       (unless (trivial-timers:timer-scheduled-p existing-timer)
         (trivial-timers:schedule-timer
          existing-timer
-         (mentat::adjust-universal-timestamp timestamp)
+         (mentat::adjust-universal-timestamp timestamp :offset-hours 1)
          :absolute-p t)))))
 
 (defun handle-notification (timer-id user entry)
