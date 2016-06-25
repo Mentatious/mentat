@@ -133,14 +133,18 @@
 
 (defun find-entries-nonempty-field (collection field)
   (with-check-connection
-    (cl-mongo:docs
-     (cl-mongo:iter
-      (cl-mongo:db.find
-       collection
-       (cl-mongo:kv
-        (cl-mongo:kv
-         "query"
-         (cl-mongo:$!= field nil))) :limit 0)))))
+    (let ((docs-ordered
+           (cl-mongo:docs
+            (cl-mongo:iter
+             (cl-mongo:db.find
+              collection
+              (cl-mongo:kv
+               (cl-mongo:kv "query"
+                            (cl-mongo:$!= field nil))
+               (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
+                                                   (cl-mongo:kv field 1)))) :limit 0)))))
+      (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
+      docs-ordered)))
 
 (defun find-timestamped-entries (&optional (collection *current-collection-name*))
   (let ((results (union
