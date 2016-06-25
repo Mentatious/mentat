@@ -79,6 +79,7 @@
   ("all$" (return (values 'all 'all)))
   ("org$" (return (values 'org 'org)))
   ("raw$" (return (values 'raw 'raw)))
+  ("timestamped" (return (values 'timestamped 'timestamped)))
   ("last" (return (values 'last $@)))
   ("^[Ss]ortby" (return (values 'sortby $@)))
   ("what" (return (values 'what $@)))
@@ -107,8 +108,8 @@
   (:start-symbol message)
   (:terminals (add all cleardb colon date deadline drop entrydata entrystatus heading
                hyphen id last none number org pick print prio priority raw schedule
-               search set sortby status tag tags time ts undeadline unschedule update
-               usage what))
+               search set sortby status tag tags time timestamped ts undeadline
+               unschedule update usage what))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -159,6 +160,12 @@
            (print last #'(lambda (print last)
                           (declare (ignore print last))
                           (let ((entries *last-query-result*))
+                            (if (> (length entries) 0)
+                                (format nil "entries:~{~%~a~}" (print-entries entries))
+                                (format nil "No last query results.")))))
+           (print timestamped #'(lambda (print timestamped)
+                          (declare (ignore print timestamped))
+                          (let ((entries (find-timestamped-entries)))
                             (if (> (length entries) 0)
                                 (format nil "entries:~{~%~a~}" (print-entries entries))
                                 (format nil "No last query results.")))))
