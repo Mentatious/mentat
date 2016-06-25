@@ -149,7 +149,7 @@
                                 (format nil "No entries found.")))))
            (print org #'(lambda (print org)
                           (declare (ignore print org))
-                          (let ((entries (list-entries :as-org t)))
+                          (let ((entries (list-entries)))
                             (if (> (length entries) 0)
                                 (format nil "entries:~{~%~a~}" (print-entries entries :as-org t))
                                 (format nil "No entries found.")))))
@@ -263,7 +263,7 @@
                        (update-entries *last-query-result* "scheduled" (make-timestamp timestamp))))
            (unschedule last
                   #'(lambda (unschedule last)
-                       (declare (ignore unschedule))
+                       (declare (ignore unschedule last))
                        (update-entries *last-query-result* "scheduled" nil)))
            (schedule last numbers pick timestamp
                   #'(lambda (schedule last indexes pick timestamp)
