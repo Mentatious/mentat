@@ -8,7 +8,7 @@
 
 (defparameter *last-query-result* nil)
 
-(defun set-collection-name-by-user (username)
+(defun set-user-context (username)
   (setf *current-collection-name*
         (concatenate 'string mentat-config::*entries-collection-prefix* "-" username)))
 

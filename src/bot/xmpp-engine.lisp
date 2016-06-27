@@ -135,7 +135,7 @@
   (let* ((body (xmpp:body message))
          (from (xmpp:from message))
          (from-bare (subseq from 0 (position #\/ from))))
-    (set-collection-name-by-user from-bare)
+    (set-user-context from-bare)
     (reply-chat connection from
                 (reply-message (string-right-trim " " body))
                 (xmpp::type- message))))
