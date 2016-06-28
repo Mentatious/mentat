@@ -115,7 +115,7 @@
                 #'(lambda (add entrydata)
                     (declare (ignore add))
                     (add-entry entrydata)
-                    (format nil "Added.")))
+                    (format nil "Added '~a'." entrydata)))
            (add prio entrydata)
            (add todo entrydata)
            (add todo prio entrydata)
