@@ -94,9 +94,7 @@
             (local-time:adjust-timestamp today-ts
               (offset :hour 1)
               (offset :day 1)))) ;FIXME: find how to convert from GMT to timezone
-      (and (local-time:timestamp>
-            (local-time:universal-to-timestamp timestamp)
-            today-ts)
-           (local-time:timestamp<=
-            (local-time:universal-to-timestamp timestamp)
-            tomorrow-ts)))))
+      (local-time:timestamp<=
+       today-ts
+       (local-time:universal-to-timestamp timestamp)
+       tomorrow-ts))))
