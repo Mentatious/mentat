@@ -265,7 +265,7 @@
                      #'(lambda (schedule indexes pick timestamp)
                          (declare (ignore schedule pick))
                          (update-entries (pick-entries (ensure-list indexes))
-                                         "scheduled" (make-timestamp timestamp))))
+                                         "scheduled" timestamp)))
            (unschedule numbers
                        #'(lambda (unschedule indexes)
                            (declare (ignore unschedule))
@@ -274,7 +274,7 @@
            (schedule last pick timestamp
                      #'(lambda (schedule last pick timestamp)
                          (declare (ignore schedule last pick))
-                         (update-entries *last-query-result* "scheduled" (make-timestamp timestamp))))
+                         (update-entries *last-query-result* "scheduled" timestamp)))
            (unschedule last
                        #'(lambda (unschedule last)
                            (declare (ignore unschedule last))
@@ -283,7 +283,7 @@
                      #'(lambda (schedule last indexes pick timestamp)
                          (declare (ignore schedule last pick))
                          (update-entries (pick-entries (ensure-list indexes) :last-query t)
-                                         "scheduled" (make-timestamp timestamp))))
+                                         "scheduled" timestamp)))
            (unschedule last numbers
                        #'(lambda (unschedule last indexes)
                            (declare (ignore unschedule last))
@@ -293,7 +293,7 @@
                      #'(lambda (deadline indexes pick timestamp)
                          (declare (ignore deadline pick))
                          (update-entries (pick-entries (ensure-list indexes))
-                                         "deadline" (make-timestamp timestamp))))
+                                         "deadline" timestamp)))
            (undeadline numbers
                        #'(lambda (undeadline indexes)
                            (declare (ignore undeadline))
@@ -302,7 +302,7 @@
            (deadline last pick timestamp
                      #'(lambda (deadline last pick timestamp)
                          (declare (ignore deadline last pick))
-                         (update-entries *last-query-result* "deadline" (make-timestamp timestamp))))
+                         (update-entries *last-query-result* "deadline" timestamp)))
            (undeadline last
                        #'(lambda (undeadline last)
                            (declare (ignore undeadline last))
@@ -311,7 +311,7 @@
                      #'(lambda (deadline last indexes pick timestamp)
                          (declare (ignore deadline last pick))
                          (update-entries (pick-entries (ensure-list indexes) :last-query t)
-                                         "deadline" (make-timestamp timestamp))))
+                                         "deadline" timestamp)))
            (undeadline last numbers
                        #'(lambda (undeadline last indexes)
                            (declare (ignore undeadline last))
@@ -369,8 +369,21 @@
                       #'(lambda (manytags tag)
                           (mapcar #'(lambda (tagdata) (string-right-trim ":" tagdata))
                                   `(,@(alexandria:flatten manytags) ,tag)))))
-  (timestamp date
-             (date time)))
+  (timestamp (date
+              #'(lambda (date)
+                  (local-time:timestamp-to-universal
+                   (apply #'local-time:encode-timestamp
+                          `(0 0 0 0 ,@(mapcar #'parse-integer
+                                              (split-sequence:split-sequence #\- date)))))))
+             (date time
+                   #'(lambda (date time)
+                       (local-time:timestamp-to-universal
+                        (apply #'local-time:encode-timestamp
+                               `(0 0
+                                   ,@(nreverse (mapcar #'parse-integer
+                                                      (split-sequence:split-sequence #\: time)))
+                                   ,@(mapcar #'parse-integer
+                                             (split-sequence:split-sequence #\- date)))))))))
 
 (defun reply-message (body)
   (handler-case

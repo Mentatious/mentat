@@ -17,25 +17,6 @@
   (handler-case (load filename :verbose t :print t)
     (error (e) (format t "~&Error loading config: ~a" e))))
 
-(defun make-timestamp (timestamp)
-  (let* ((tslist (ensure-list timestamp))
-         (datepart (car tslist))
-         (timepart (cadr tslist))
-         components)
-    (let ((dateparts (split-sequence:split-sequence #\- datepart)))
-      (dolist (part (nreverse dateparts))
-        (push (parse-integer part) components)))
-    (if timepart
-      (let ((timeparts (split-sequence:split-sequence #\: timepart)))
-        (dolist (part timeparts)
-          (push (parse-integer part) components)))
-      (dotimes (x 2)
-        (push 0 components)))
-    (dotimes (x 2)
-      (push 0 components))
-    (local-time:timestamp-to-universal
-     (apply #'local-time:encode-timestamp components))))
-
 (defun format-timestamp (timestamp &key (as-scheduled nil) (as-deadline nil))
   (let (opening closing)
     (cond (as-scheduled (setf opening "<"
