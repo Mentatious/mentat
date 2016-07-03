@@ -66,6 +66,9 @@
    (return (values 'entrydata
                    (string-trim "\"" $@))))
   ("\-" (return (values 'hyphen $@)))
+  ("\\+[0-9]+d" (return (values 'relative-days $@)))
+  ("\\+[0-9]+h" (return (values 'relative-hours $@)))
+  ("\\+[0-9]+m" (return (values 'relative-minutes $@)))
   ("schedule" (return (values 'schedule $@)))
   ("unschedule" (return (values 'unschedule $@)))
   ("deadline" (return (values 'deadline $@)))
@@ -105,12 +108,13 @@
                    (string-right-trim "\:" $@))))
   ("\:" (return (values 'colon $@))))
 
+;;FIXME: refactor out code duplicates
 (yacc:define-parser bot-parser
   (:start-symbol message)
   (:terminals (add all cleardb colon date deadline drop entrydata entrystatus heading
-               hyphen id last none number org pick print prio priority raw schedule
-               search set sortby status tag tags time timestamped today ts undeadline
-               unschedule update usage what))
+               hyphen id last none number org pick print prio priority raw relative-days
+               relative-hours relative-minutes schedule search set sortby status tag tags
+               time timestamped today ts undeadline unschedule update usage what))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -383,7 +387,57 @@
                                    ,@(nreverse (mapcar #'parse-integer
                                                       (split-sequence:split-sequence #\: time)))
                                    ,@(mapcar #'parse-integer
-                                             (split-sequence:split-sequence #\- date)))))))))
+                                             (split-sequence:split-sequence #\- date)))))))
+             relative-timestamp)
+  (relative-timestamp (relative-days
+                       #'(lambda (days)
+                           (local-time:timestamp-to-universal
+                            (local-time:adjust-timestamp
+                                (local-time:now)
+                              (offset :hour -1)
+                              (offset :day (parse-integer (string-trim "+d" days)))))))
+                      (relative-hours
+                       #'(lambda (hours)
+                           (local-time:timestamp-to-universal
+                            (local-time:adjust-timestamp
+                                (local-time:now)
+                              (offset :hour (- (parse-integer (string-trim "+h" hours)) 1))))))
+                      (relative-minutes
+                       #'(lambda (minutes)
+                           (local-time:timestamp-to-universal
+                            (local-time:adjust-timestamp
+                                (local-time:now)
+                              (offset :hour -1)
+                              (offset :minute (parse-integer (string-trim "+m" minutes)))))))
+                      (relative-days relative-hours
+                                     #'(lambda (days hours)
+                                         (local-time:timestamp-to-universal
+                                          (local-time:adjust-timestamp
+                                              (local-time:now)
+                                            (offset :hour (- (parse-integer (string-trim "+h" hours)) 1))
+                                            (offset :day (parse-integer (string-trim "+d" days)))))))
+                      (relative-days relative-minutes
+                                     #'(lambda (days minutes)
+                                         (local-time:timestamp-to-universal
+                                          (local-time:adjust-timestamp
+                                              (local-time:now)
+                                            (offset :day (parse-integer (string-trim "+d" days)))
+                                            (offset :minute (parse-integer (string-trim "+m" days)))))))
+                      (relative-hours relative-minutes
+                                      #'(lambda (days hours)
+                                         (local-time:timestamp-to-universal
+                                          (local-time:adjust-timestamp
+                                              (local-time:now)
+                                            (offset :hour (- (parse-integer (string-trim "+h" hours)) 1))
+                                            (offset :minute (parse-integer (string-trim "+m" minutes)))))))
+                      (relative-days relative-hours relative-minutes
+                                     #'(lambda (days hours minutes)
+                                         (local-time:timestamp-to-universal
+                                          (local-time:adjust-timestamp
+                                              (local-time:now)
+                                            (offset :hour (- (parse-integer (string-trim "+h" hours)) 1))
+                                            (offset :day (parse-integer (string-trim "+d" days)))
+                                            (offset :minute (parse-integer (string-trim "+m" minutes)))))))))
 
 (defun reply-message (body)
   (handler-case
