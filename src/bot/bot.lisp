@@ -65,10 +65,10 @@
   ("\"[А-Яа-яA-Za-z0-9ё_.,\%\&\-/|><\:\;\'\=\(\)\*\?\#\№\@\`\!\ ]+\""
    (return (values 'entrydata
                    (string-trim "\"" $@))))
+  ("[+-][0-9]+d" (return (values 'relative-days $@)))
+  ("[+-][0-9]+h" (return (values 'relative-hours $@)))
+  ("[+-][0-9]+m" (return (values 'relative-minutes $@)))
   ("\-" (return (values 'hyphen $@)))
-  ("\\+[0-9]+d" (return (values 'relative-days $@)))
-  ("\\+[0-9]+h" (return (values 'relative-hours $@)))
-  ("\\+[0-9]+m" (return (values 'relative-minutes $@)))
   ("schedule" (return (values 'schedule $@)))
   ("unschedule" (return (values 'unschedule $@)))
   ("deadline" (return (values 'deadline $@)))
