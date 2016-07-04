@@ -92,6 +92,7 @@
   ("status" (return (values 'status 'status)))
   ("priority" (return (values 'priority 'priority)))
   ("heading" (return (values 'heading 'heading)))
+  ("append" (return (values 'append 'append)))
   ("tags" (return (values 'tags 'tags)))
   ("none" (return (values 'none 'none)))
   ("ts" (return (values 'ts 'ts)))
@@ -112,10 +113,11 @@
 ;;FIXME: refactor out code duplicates
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (add all at cleardb colon date deadline drop entrydata entrystatus heading
-               hyphen id last none number org pick print prio priority raw relative-days
-               relative-hours relative-minutes schedule search set sortby status tag tags
-               time timestamped today ts undeadline unschedule update usage what))
+  (:terminals (add all append at cleardb colon date deadline drop entrydata entrystatus
+               heading hyphen id last none number org pick print prio priority raw
+               relative-days relative-hours relative-minutes schedule search set sortby
+               status tag tags time timestamped today ts undeadline unschedule update
+               usage what))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -224,6 +226,22 @@
                        (if (listp indexes)
                            (format nil "Cannot update headings in batch.")
                            (update-entries (pick-entries (ensure-list indexes) :last-query t) "heading" entrydata))))
+           (update numbers append heading entrydata
+                   #'(lambda (update indexes append heading entrydata)
+                       (declare (ignore update append heading))
+                       (if (listp indexes)
+                           (format nil "Cannot update headings in batch.")
+                           (let* ((entry (pick-entry (parse-integer indexes)))
+                                  (new-heading (concatenate 'string (get-entry-field entry "heading") " " entrydata)))
+                             (update-entries (ensure-list entry) "heading" new-heading)))))
+           (update last numbers append heading entrydata
+                   #'(lambda (update last indexes append heading entrydata)
+                       (declare (ignore update last append heading))
+                       (if (listp indexes)
+                           (format nil "Cannot update headings in batch.")
+                           (let* ((entry (pick-entry (parse-integer indexes) :last-query t))
+                                  (new-heading (concatenate 'string (get-entry-field entry "heading") " " entrydata)))
+                             (update-entries (ensure-list entry) "heading" new-heading)))))
            (update numbers set status entrystatus
                    #'(lambda (update indexes set status entrystatus)
                        (declare (ignore update set status))
