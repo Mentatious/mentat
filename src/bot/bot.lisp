@@ -74,6 +74,7 @@
   ("deadline" (return (values 'deadline $@)))
   ("undeadline" (return (values 'undeadline $@)))
   ("pick" (return (values 'pick $@)))
+  ("at" (return (values 'at $@)))
   ("[0-9]{2}-[0-9]{2}-[0-9]{4}" (return (values 'date $@)))
   ("[0-9]{2}:[0-9]{2}" (return (values 'time $@)))
   ("[0-9]+" (return (values 'number $@)))
@@ -111,7 +112,7 @@
 ;;FIXME: refactor out code duplicates
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (add all cleardb colon date deadline drop entrydata entrystatus heading
+  (:terminals (add all at cleardb colon date deadline drop entrydata entrystatus heading
                hyphen id last none number org pick print prio priority raw relative-days
                relative-hours relative-minutes schedule search set sortby status tag tags
                time timestamped today ts undeadline unschedule update usage what))
@@ -120,6 +121,12 @@
                     (declare (ignore add))
                     (add-entry entrydata)
                     (format nil "Added '~a'." entrydata)))
+           (add entrydata schedule at timestamp
+                #'(lambda (add entrydata schedule at timestamp)
+                    (declare (ignore add schedule at))
+                    (add-entry entrydata
+                               :scheduled timestamp)
+                    (format nil "Added '~a', scheduled by ~a." entrydata (format-timestamp timestamp :as-scheduled t))))
            (add prio entrydata)
            (add todo entrydata)
            (add todo prio entrydata)
