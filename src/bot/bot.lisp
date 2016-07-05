@@ -466,7 +466,7 @@
 
 (defun reply-message (body)
   (handler-case
-      (yacc:parse-with-lexer (bot-lexer body) bot-parser)
+      (yacc:parse-with-lexer (bot-lexer (string-trim " " body)) bot-parser)
     (error (e)
       (progn
         ;; think of informative error analisys and output
