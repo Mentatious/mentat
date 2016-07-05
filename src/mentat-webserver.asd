@@ -14,6 +14,6 @@
   :components ((:file "webserver/package")
                (:file "parameters")
                (:file "util")
-               (:file "mongodb")
+               (:file "db/mongodb")
                (:file "webserver/webserver")
                ))

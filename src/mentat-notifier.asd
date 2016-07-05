@@ -18,6 +18,6 @@
   :components ((:file "notifier/package")
                (:file "parameters")
                (:file "util")
-               (:file "mongodb")
+               (:file "db/mongodb")
                (:file "notifier/notifier")
                ))

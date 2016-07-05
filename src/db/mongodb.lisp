@@ -160,11 +160,11 @@
     (setf *last-query-result* results)
     results))
 
-(defun find-all-timestamped-entries-by-collection ()
+(defun find-all-timestamped-entries-by-collection (&key (today nil))
   (let ((all-entries (make-hash-table :test #'equal)))
     (dolist (user-collection (get-user-collection-names))
       (setf (gethash (subseq user-collection (length "entries-")) all-entries)
-            (find-timestamped-entries :collection user-collection)))
+            (find-timestamped-entries :collection user-collection :today today)))
     all-entries))
 
 (defun list-entries (&key (field nil) (value nil))

@@ -19,6 +19,6 @@
   :components ((:file "bot/package")
                (:file "parameters")
                (:file "util")
-               (:file "mongodb" )
+               (:file "db/mongodb" )
                (:file "bot/xmpp-engine")
                (:file "bot/bot")))
