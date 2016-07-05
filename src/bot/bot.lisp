@@ -73,7 +73,6 @@
   ("unschedule" (return (values 'unschedule $@)))
   ("deadline" (return (values 'deadline $@)))
   ("undeadline" (return (values 'undeadline $@)))
-  ("pick" (return (values 'pick $@)))
   ("at" (return (values 'at $@)))
   ("[0-9]{2}-[0-9]{2}-[0-9]{4}" (return (values 'date $@)))
   ("[0-9]{2}:[0-9]{2}" (return (values 'time $@)))
@@ -114,7 +113,7 @@
 (yacc:define-parser bot-parser
   (:start-symbol message)
   (:terminals (add all append at cleardb colon date deadline drop entrydata entrystatus
-               heading hyphen id last none number org pick print prio priority raw
+               heading hyphen id last none number org print prio priority raw
                relative-days relative-hours relative-minutes schedule search set sortby
                status tag tags time timestamped today ts undeadline unschedule update
                usage what))
@@ -290,9 +289,9 @@
                    #'(lambda (update last indexes set priority prio)
                        (declare (ignore update last set priority))
                        (update-entries (pick-entries (ensure-list indexes) :last-query t) "priority" prio)))
-           (schedule numbers pick timestamp
-                     #'(lambda (schedule indexes pick timestamp)
-                         (declare (ignore schedule pick))
+           (schedule numbers at timestamp
+                     #'(lambda (schedule indexes at timestamp)
+                         (declare (ignore schedule at))
                          (update-entries (pick-entries (ensure-list indexes))
                                          "scheduled" timestamp)))
            (unschedule numbers
@@ -300,17 +299,17 @@
                            (declare (ignore unschedule))
                            (update-entries (pick-entries (ensure-list indexes))
                                            "scheduled" nil)))
-           (schedule last pick timestamp
-                     #'(lambda (schedule last pick timestamp)
-                         (declare (ignore schedule last pick))
+           (schedule last at timestamp
+                     #'(lambda (schedule last at timestamp)
+                         (declare (ignore schedule last at))
                          (update-entries *last-query-result* "scheduled" timestamp)))
            (unschedule last
                        #'(lambda (unschedule last)
                            (declare (ignore unschedule last))
                            (update-entries *last-query-result* "scheduled" nil)))
-           (schedule last numbers pick timestamp
-                     #'(lambda (schedule last indexes pick timestamp)
-                         (declare (ignore schedule last pick))
+           (schedule last numbers at timestamp
+                     #'(lambda (schedule last indexes at timestamp)
+                         (declare (ignore schedule last at))
                          (update-entries (pick-entries (ensure-list indexes) :last-query t)
                                          "scheduled" timestamp)))
            (unschedule last numbers
@@ -318,9 +317,9 @@
                            (declare (ignore unschedule last))
                            (update-entries (pick-entries (ensure-list indexes) :last-query t)
                                            "scheduled" nil)))
-           (deadline numbers pick timestamp
-                     #'(lambda (deadline indexes pick timestamp)
-                         (declare (ignore deadline pick))
+           (deadline numbers at timestamp
+                     #'(lambda (deadline indexes at timestamp)
+                         (declare (ignore deadline at))
                          (update-entries (pick-entries (ensure-list indexes))
                                          "deadline" timestamp)))
            (undeadline numbers
@@ -328,17 +327,17 @@
                            (declare (ignore undeadline))
                            (update-entries (pick-entries (ensure-list indexes))
                                            "deadline" nil)))
-           (deadline last pick timestamp
-                     #'(lambda (deadline last pick timestamp)
-                         (declare (ignore deadline last pick))
+           (deadline last at timestamp
+                     #'(lambda (deadline last at timestamp)
+                         (declare (ignore deadline last at))
                          (update-entries *last-query-result* "deadline" timestamp)))
            (undeadline last
                        #'(lambda (undeadline last)
                            (declare (ignore undeadline last))
                            (update-entries *last-query-result* "deadline" nil)))
-           (deadline last numbers pick timestamp
-                     #'(lambda (deadline last indexes pick timestamp)
-                         (declare (ignore deadline last pick))
+           (deadline last numbers at timestamp
+                     #'(lambda (deadline last indexes at timestamp)
+                         (declare (ignore deadline last at))
                          (update-entries (pick-entries (ensure-list indexes) :last-query t)
                                          "deadline" timestamp)))
            (undeadline last numbers
