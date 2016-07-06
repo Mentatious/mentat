@@ -29,6 +29,6 @@
   (setf (hunchentoot:content-type*) "text/plain")
   (mentat::set-user-context username)
   (let ((entries (mentat::print-entries (mentat::list-entries) :as-org t)))
-    (if (> (length entries) 0)
+    (if (plusp (length entries))
         (format nil "~{~%~a~}" entries)
         (format nil "No entries found."))))
