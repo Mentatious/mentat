@@ -446,7 +446,7 @@
                                           (local-time:adjust-timestamp
                                               (local-time:now)
                                             (offset :day (parse-integer (string-trim "+d" days)))
-                                            (offset :minute (parse-integer (string-trim "+m" days)))))))
+                                            (offset :minute (parse-integer (string-trim "+m" minutes)))))))
                       (relative-hours relative-minutes
                                       #'(lambda (hours minutes)
                                          (local-time:timestamp-to-universal
