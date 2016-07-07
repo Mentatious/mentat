@@ -61,10 +61,11 @@
    (local-time:universal-to-timestamp timestamp)
    (local-time:adjust-timestamp (local-time:now) (offset :hour tz-shift))))
 
-(defun adjust-universal-timestamp (timestamp &key (offset-hours 0) (offset-days 0))
+(defun adjust-universal-timestamp (timestamp &key (offset-minutes 0) (offset-hours 0) (offset-days 0))
   (local-time:timestamp-to-universal
    (local-time:adjust-timestamp
        (local-time:universal-to-timestamp timestamp)
+     (offset :minute offset-minutes)
      (offset :hour offset-hours)
      (offset :day offset-days))))
 
