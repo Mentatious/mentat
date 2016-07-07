@@ -78,6 +78,8 @@
   ("[0-9]{2}:[0-9]{2}" (return (values 'time $@)))
   ("[0-9]+" (return (values 'number $@)))
   ("^[Aa]dd" (return (values 'add $@)))
+  ("added" (return (values 'added $@)))
+  ("within" (return (values 'within $@)))
   ("^[Pp]rint" (return (values 'print $@)))
   ("all$" (return (values 'all 'all)))
   ("org$" (return (values 'org 'org)))
@@ -112,11 +114,11 @@
 ;;FIXME: refactor out code duplicates
 (yacc:define-parser bot-parser
   (:start-symbol message)
-  (:terminals (add all append at cleardb colon date deadline drop entrydata entrystatus
+  (:terminals (add added all append at cleardb colon date deadline drop entrydata entrystatus
                heading hyphen id last none number org print prio priority raw
                relative-days relative-hours relative-minutes schedule search set sortby
                status tag tags time timestamped today ts undeadline unschedule update
-               usage what))
+               usage what within))
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
@@ -176,6 +178,31 @@
                              (if (plusp (length entries))
                                  (format nil "entries:~{~%~a~}" (print-entries entries))
                                  (format nil "No last query results.")))))
+           (print last numbers added
+                  #'(lambda (print last indexes added)
+                      (declare (ignore print last added))
+                      (if (listp indexes)
+                          (format nil "Please provide a number of entries to show, it should not be multiple numbers.")
+                          (let ((entries (list-entries :sort-by "ts_added" :start (- (parse-integer indexes)))))
+                            (if (plusp (length entries))
+                                (progn
+                                  (setf *last-query-result* entries)
+                                  (format nil "entries:~{~%~a~}" (print-entries entries)))
+                                (format nil "No entries found."))))))
+           (print last added within relative-timestamp
+                  #'(lambda (print last added within relative-timestamp)
+                      (declare (ignore print last added within))
+                      (let ((entries (list-entries :sort-by "ts_added")))
+                        (setf entries (remove-if (complement
+                                                  (lambda (entry) (timestamp-in-past-p
+                                                                   (parse-integer (get-entry-field entry "ts_added"))
+                                                                   :not-earlier-than relative-timestamp)))
+                                                 entries))
+                        (if (plusp (length entries))
+                            (progn
+                              (setf *last-query-result* entries)
+                              (format nil "entries:~{~%~a~}" (print-entries entries)))
+                            (format nil "No entries found.")))))
            (print timestamped #'(lambda (print timestamped)
                                   (declare (ignore print timestamped))
                                   (let ((entries (find-timestamped-entries)))
