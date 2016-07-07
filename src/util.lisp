@@ -56,10 +56,10 @@
       var
       (list var)))
 
-(defun timestamp-in-future-p (timestamp)
+(defun timestamp-in-future-p (timestamp &key (tz-shift -1))
   (local-time:timestamp>
    (local-time:universal-to-timestamp timestamp)
-   (local-time:adjust-timestamp (local-time:now) (:offset :hour -1)))) ;TODO: make offset an explicit paramater
+   (local-time:adjust-timestamp (local-time:now) (offset :hour tz-shift))))
 
 (defun adjust-universal-timestamp (timestamp &key (offset-hours 0) (offset-days 0))
   (local-time:timestamp-to-universal
