@@ -91,7 +91,7 @@
 
 (defparameter *sortby-criterion* "ts_added")
 
-(defun find-entries-sorted (&key (field nil) (value nil))
+(defun find-entries-sorted (&key (field nil) (value nil) (sort-by *sortby-criterion*))
   (with-check-connection
     (cl-mongo:docs
      (cl-mongo:iter
@@ -105,11 +105,11 @@
                                                    (cl-mongo:kv "$options" "i"))
                                       value)))
         (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
-                                            (cl-mongo:kv *sortby-criterion* 1))))
+                                            (cl-mongo:kv sort-by 1))))
        :limit 0)))))
 
 ;;TODO: find less straightforward/more clever way to filter by lists
-(defun find-entries-by-list-sorted (&key (field nil) (value nil))
+(defun find-entries-by-list-sorted (&key (field nil) (value nil) (sort-by *sortby-criterion*))
   (declare (ignore field value))
   (with-check-connection
     (let ((docs-ordered
@@ -121,7 +121,7 @@
                (cl-mongo:kv "query"
                             (cl-mongo:kv nil nil))
                (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
-                                                   (cl-mongo:kv *sortby-criterion* 1))))
+                                                   (cl-mongo:kv sort-by 1))))
               :limit 0)))))
       (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
       (if (and field value (listp value))
@@ -167,10 +167,12 @@
             (find-timestamped-entries :collection user-collection :today today)))
     all-entries))
 
-(defun list-entries (&key (field nil) (value nil))
+(defun list-entries (&key (field nil) (value nil) (sort-by *sortby-criterion*))
   (with-check-connection
-      (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field :value value))
-                           (t (find-entries-sorted :field field :value value)))))
+      (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field
+                                                                                   :value value
+                                                                                   :sort-by sort-by))
+                           (t (find-entries-sorted :field field :value value :sort-by sort-by)))))
         (setf *last-query-result* results)
         results)))
 
