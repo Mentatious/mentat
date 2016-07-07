@@ -167,12 +167,19 @@
             (find-timestamped-entries :collection user-collection :today today)))
     all-entries))
 
-(defun list-entries (&key (field nil) (value nil) (sort-by *sortby-criterion*))
+(defun list-entries (&key (field nil) (value nil) (sort-by *sortby-criterion*) (start 0) (end nil))
   (with-check-connection
       (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field
                                                                                    :value value
                                                                                    :sort-by sort-by))
                            (t (find-entries-sorted :field field :value value :sort-by sort-by)))))
+        (when (minusp start)
+          (setf start (+ (length results) start)))
+        (when (and end (minusp end))
+          (setf end (+ (length results) end)))
+        (if end
+            (setf results (subseq results start end))
+            (setf results (nthcdr start results)))
         (setf *last-query-result* results)
         results)))
 
