@@ -58,7 +58,7 @@
 
 (defun timestamp-in-future-p (timestamp &key (tz-shift -1) (not-later-than nil))
   (let* ((adjusted-now (local-time:adjust-timestamp (local-time:now) (offset :hour tz-shift)))
-        (ts (local-time:universal-to-timestamp timestamp))
+        (ts (local-time:adjust-timestamp (local-time:universal-to-timestamp timestamp) (offset :hour tz-shift)))
         (in-future-p (local-time:timestamp> ts adjusted-now)))
     (if not-later-than
         (and in-future-p
@@ -67,7 +67,7 @@
 
 (defun timestamp-in-past-p (timestamp &key (tz-shift -1) (not-earlier-than nil))
   (let* ((adjusted-now (local-time:adjust-timestamp (local-time:now) (offset :hour tz-shift)))
-        (ts (local-time:universal-to-timestamp timestamp))
+        (ts (local-time:adjust-timestamp (local-time:universal-to-timestamp timestamp) (offset :hour tz-shift)))
         (in-past-p (local-time:timestamp< ts adjusted-now)))
     (if not-earlier-than
         (and in-past-p
