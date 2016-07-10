@@ -14,8 +14,9 @@
 
 (defun add-entry (heading &key (status "") (priority "") (tags nil) (scheduled nil) (deadline nil))
   (with-check-connection
-    (let ((doc (cl-mongo:make-document))
-          (ts_added (get-universal-time)))
+    (let* ((doc (cl-mongo:make-document))
+           (ts_added (get-universal-time))
+           (ts_updated ts_added))
       (when (plusp (length status)) (set-entry-field doc "status" status :save-entry nil))
       (when (plusp (length priority)) (set-entry-field doc "priority" priority :save-entry nil))
       (when (plusp (length heading)) (set-entry-field doc "heading" heading :save-entry nil))
@@ -23,6 +24,7 @@
       (when scheduled (set-entry-field doc "scheduled" scheduled :save-entry nil))
       (when deadline (set-entry-field doc "deadline" deadline :save-entry nil))
       (set-entry-field doc "ts_added" (write-to-string ts_added) :save-entry nil)
+      (set-entry-field doc "ts_updated" (write-to-string ts_updated) :save-entry nil)
       (set-entry-field doc "entry_id" (uuid::print-object (uuid:make-v4-uuid) nil))
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
@@ -33,6 +35,7 @@
         ((stringp value) (cl-mongo:add-element field (string-trim '(#\Space) value) entry))
         (t (cl-mongo:add-element field value entry)))
   (when save-entry
+    (cl-mongo:add-element "ts_updated" (get-universal-time) entry)
     (cl-mongo:db.save *current-collection-name* entry)))
 
 (defun get-entry-field (entry field)
