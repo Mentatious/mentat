@@ -1,0 +1,42 @@
+- include: preprocess.yaml
+
+- hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    # TODO: exclude Quicklisp, see:
+    # https://www.darkchestnut.com/2016/dont-put-quicklisp-in-your-binary-just-because-a-library-demands-it/
+    # https://www.darkchestnut.com/2016/keep-quicklisp-and-qlot-out-of-your-application-binary/
+    - name: build restapi binary
+      shell: "sbcl --eval \"(ql:quickload 'mentat-restapi)\" --eval \"(mentat-restapi::save-image-restapi)\""
+
+- hosts: botservers
+  gather_facts: no
+
+  tasks:
+    - include_vars: common_vars.yml
+
+    - name: remove old restapi remote binary
+      file:
+        path=/home/{{ username }}/{{ restapi_binary_name }}
+        state=absent
+
+    - name: copy compiled restapi binary to remote server
+      copy: src=../deploy/{{ restapi_binary_name }} dest=/home/{{ username }}
+
+    - name: set restapi binary attrs
+      file: path=/home/{{ username }}/{{ restapi_binary_name }} mode=u+rwx
+
+    - name: restart mentat-restapi service on remote server
+      supervisorctl: name=mentat-restapi state=restarted
+      become: yes
+
+- hosts: localhost
+
+  tasks:
+    - name: cleanup supervisor conf file
+      file: path=./mentat-restapi state=absent
+
+- include: postprocess.yaml

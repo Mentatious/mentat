@@ -3,3 +3,4 @@ supervisor_conf: mentat.conf
 xmpp_binary_name: mentat-xmpp-bot
 webserver_binary_name: mentat-webserver
 notifier_binary_name: mentat-notifier
+restapi_binary_name: mentat-restapi
