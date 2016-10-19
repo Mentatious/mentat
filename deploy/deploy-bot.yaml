@@ -40,4 +40,10 @@
       supervisorctl: name=mentat-xmpp state=restarted
       become: yes
 
+- hosts: localhost
+
+  tasks:
+    - name: cleanup recently built binary
+      file: path=./mentat-xmpp-bot state=absent
+
 - include: postprocess.yaml

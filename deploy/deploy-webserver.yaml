@@ -36,8 +36,7 @@
 - hosts: localhost
 
   tasks:
-
-    - name: cleanup supervisor conf file
-      file: path=./supervisor.conf state=absent
+    - name: cleanup recently built binary
+      file: path=./mentat-webserver state=absent
 
 - include: postprocess.yaml

@@ -1,6 +1,3 @@
 config.lisp
 data
-deploy/mentat-xmpp-bot
-deploy/mentat-webserver
-deploy/mentat-notifier
 inventory.ini

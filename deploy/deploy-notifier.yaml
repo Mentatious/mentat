@@ -33,4 +33,10 @@
       supervisorctl: name=mentat-notifier state=restarted
       become: yes
 
+- hosts: localhost
+
+  tasks:
+    - name: cleanup recently built binary
+      file: path=./mentat-notifier state=absent
+
 - include: postprocess.yaml
