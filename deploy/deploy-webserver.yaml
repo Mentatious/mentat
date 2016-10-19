@@ -31,7 +31,7 @@
 
     - name: restart mentat-webserver service on remote server
       supervisorctl: name=mentat-webserver state=restarted
-      sudo: yes
+      become: yes
 
 - hosts: localhost
 

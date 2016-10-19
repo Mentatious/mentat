@@ -31,6 +31,6 @@
 
     - name: restart mentat-notifier service on remote server
       supervisorctl: name=mentat-notifier state=restarted
-      sudo: yes
+      become: yes
 
 - include: postprocess.yaml

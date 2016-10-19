@@ -18,19 +18,19 @@
         - mongodb
         - supervisor
         - logrotate
-      sudo: yes
+      become: yes
 
     - name: check if supervisor daemon is running
       service: name=supervisor state=started
-      sudo: yes
+      become: yes
 
     - name: check if mongodb is up and running on remote server
       service: name=mongodb state=started
-      sudo: yes
+      become: yes
 
     - name: copy supervisor conf
       copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ supervisor_conf }}
-      sudo: yes
+      become: yes
 
     - name: copy mentat config to remote server
       copy: src=../src/config.lisp dest=/home/{{ username }}
