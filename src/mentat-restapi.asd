@@ -11,6 +11,7 @@
                #:clack-handler-hunchentoot
                #:ningle
                #:flexi-streams
+               #:cl-json
                #:swank)
   :serial t
   :components ((:file "restapi/package")
