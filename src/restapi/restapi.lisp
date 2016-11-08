@@ -34,8 +34,8 @@
    :port 4009
    :style swank:*communication-style*
    :dont-close t)
-	(clack:clackup *app* :port 9003)
-	(sb-thread:join-thread
+  (clack:clackup *app* :port 9003)
+  (sb-thread:join-thread
    (find-if
     (lambda (th)
       (string= (sb-thread:thread-name th) "clack-handler-hunchentoot"))

@@ -6,11 +6,11 @@
   :depends-on (#:mentat
                #:unix-opts
                #:cl-mongo
-							 #:clack
-							 #:lack-middleware-backtrace
-							 #:clack-handler-hunchentoot
-							 #:ningle
-							 #:swank)
+               #:clack
+               #:lack-middleware-backtrace
+               #:clack-handler-hunchentoot
+               #:ningle
+               #:swank)
   :serial t
   :components ((:file "restapi/package")
                (:file "parameters")
