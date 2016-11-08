@@ -13,8 +13,9 @@
                #:swank)
   :serial t
   :components ((:file "restapi/package")
-               (:file "parameters")
+               (:file "restapi/parameters")
                (:file "util")
+               (:file "restapi/config")
                (:file "restapi/db/mongodb")
                (:file "restapi/restapi")
                ))
