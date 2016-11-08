@@ -10,6 +10,7 @@
                #:lack-middleware-backtrace
                #:clack-handler-hunchentoot
                #:ningle
+               #:flexi-streams
                #:swank)
   :serial t
   :components ((:file "restapi/package")

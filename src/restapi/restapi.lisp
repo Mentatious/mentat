@@ -4,12 +4,10 @@
 
 (defparameter *app* (make-instance 'ningle:<app>))
 
-;;FIXME: fix NIH
-(defun get-request-raw-body ()
-  (let* ((len (lack.request:request-content-length ningle:*request*))
-         (str (make-string len)))
-    (read-sequence str (lack.request:request-raw-body ningle:*request*))
-    str))
+(defun get-request-content ()
+  (flexi-streams:octets-to-string
+   (lack.request::request-content ningle:*request*)
+   :external-format :utf8))
 
 (setf (ningle:route *app* "/entries" :method :get)
       #'(lambda (params)
@@ -17,7 +15,7 @@
 
 (setf (ningle:route *app* "/entries" :method :post)
       #'(lambda (params)
-          (let ((payload (get-request-raw-body)))
+          (let ((payload (get-request-content)))
             (format t "payload: ~a" payload)
             (push payload *entries*)
             "ok")))
