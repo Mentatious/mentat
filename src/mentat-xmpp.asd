@@ -1,4 +1,4 @@
-(asdf:defsystem #:mentat
+(asdf:defsystem #:mentat-xmpp
   :description "Org-like assistant bot for personal information management"
   :author "Alex Ermolov <aaermolov@gmail.com>"
   ;TODO: provide license clause
@@ -17,7 +17,7 @@
                #:swank)
   :serial t
   :components ((:file "bot/package")
-               (:file "parameters")
+               (:file "bot/parameters")
                (:file "util")
                (:file "db/mongodb" )
                (:file "bot/xmpp-engine")

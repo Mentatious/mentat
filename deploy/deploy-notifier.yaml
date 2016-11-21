@@ -26,12 +26,16 @@
     - name: copy compiled notifier binary to remote server
       copy: src=../deploy/{{ notifier_binary_name }} dest=/home/{{ username }}
 
+    - name: copy notifier config to remote server
+      copy: src=../src/notifier/config.lisp dest=/home/{{ username }}/notifier-config.lisp
+
     - name: set notifier binary attrs
       file: path=/home/{{ username }}/{{ notifier_binary_name }} mode=u+rwx
 
     - name: restart mentat-notifier service on remote server
       supervisorctl: name=mentat-notifier state=restarted
       become: yes
+      when: False  #FIXME: check if service is actually running and then remove hardcode
 
 - hosts: localhost
 

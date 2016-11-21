@@ -1,4 +1,4 @@
-(in-package #:mentat)
+(in-package #:mentat-xmpp)
 
 (defmethod xmpp:message ((connection xmpp:connection)
                          to body &key id (type :chat) xhtml-body)
@@ -66,8 +66,8 @@
             (cxml:with-element "history"
               (cxml:attribute "maxstanzas" max-stanzas))))))))
 
-(defun start-connection-loop (connection-obj &optional (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
-                    &key (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*) (resource mentat-config::*xmpp-resource*))
+(defun start-connection-loop (connection-obj &optional (login *xmpp-login*) (password *xmpp-password*)
+                    &key (nick *xmpp-login*) (server *xmpp-server*) (resource *xmpp-resource*))
   (check-type login string)
   (check-type password string)
   (setf connection-obj (xmpp:connect :hostname server))
@@ -91,8 +91,8 @@
         (sleep 5)
         (connect login password :nick nick :server server)))))
 
-(defun connect-and-send (to body &key (login mentat-config::*xmpp-login*) (password mentat-config::*xmpp-password*)
-                                   (nick mentat-config::*xmpp-login*) (server mentat-config::*xmpp-server*) (resource mentat-config::*xmpp-resource*))
+(defun connect-and-send (to body &key (login *xmpp-login*) (password *xmpp-password*)
+                                   (nick *xmpp-login*) (server *xmpp-server*) (resource *xmpp-resource*))
   (check-type login string)
   (check-type password string)
   (let (connection-obj)
@@ -135,7 +135,7 @@
   (let* ((body (xmpp:body message))
          (from (xmpp:from message))
          (from-bare (subseq from 0 (position #\/ from))))
-    (set-user-context from-bare)
+    (mentat-db:set-user-context from-bare *entries-collection-prefix*)
     (reply-chat connection from
                 (reply-message (string-right-trim " " body))
                 (xmpp::type- message))))

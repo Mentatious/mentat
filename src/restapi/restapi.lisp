@@ -1,5 +1,10 @@
 (in-package #:mentat-restapi)
 
+;; (drakma:http-request "http://octocat.ru:9003/entries"
+;;                      :method :post
+;;                      :external-format-out :utf-8
+;;                      :content "тест2")
+
 (defparameter *entries* nil)
 
 (defparameter *app* (make-instance 'ningle:<app>))
@@ -34,6 +39,7 @@
    :port 4009
    :style swank:*communication-style*
    :dont-close t)
+  (mentat-util:load-config "restapi-config.lisp")
   (clack:clackup *app* :port 9003)
   (sb-thread:join-thread
    (find-if

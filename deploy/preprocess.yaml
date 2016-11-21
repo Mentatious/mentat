@@ -31,6 +31,3 @@
     - name: copy supervisor conf
       copy: src=./supervisor.conf dest=/etc/supervisor/conf.d/{{ supervisor_conf }}
       become: yes
-
-    - name: copy mentat config to remote server
-      copy: src=../src/config.lisp dest=/home/{{ username }}

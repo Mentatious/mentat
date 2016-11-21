@@ -1,4 +1,4 @@
-(in-package #:mentat)
+(in-package #:mentat-xmpp)
 
 (defparameter *errors* nil)
 (defparameter *connection* nil
@@ -12,11 +12,11 @@
      :port 4006
      :style swank:*communication-style*
      :dont-close t)
-    (load-config)
+    (mentat-util:load-config "xmpp-config.lisp")
     (local-time:reread-timezone-repository
-     :timezone-repository (pathname mentat-config::*timezone-repository-system-path*))
-    (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name mentat-config::*client-timezone*))
-    (init-storage)
+     :timezone-repository (pathname *timezone-repository-system-path*))
+    (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name *client-timezone*))
+    (mentat-db:init-storage *db-name*)
     (start-connection-loop *connection*)))
 
 #+sbcl
@@ -42,7 +42,7 @@
 (defun pick-entries (numbers &key (last-query nil))
   (let ((entries-to-process nil))
     (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
-      (let ((picked-entry (pick-entry entry :last-query last-query)))
+      (let ((picked-entry (mentat-db:pick-entry entry :last-query last-query)))
         (when picked-entry
           (push picked-entry entries-to-process))))
     (when entries-to-process
@@ -53,10 +53,10 @@
     (if entries
         (progn
           (dolist (entry entries)
-            (let ((before (format-entry entry)))
-              (set-entry-field entry field value)
+            (let ((before (mentat-db:format-entry entry)))
+              (mentat-db:set-entry-field entry field value)
               (push
-               (format nil "Updated-----------~%before: '~a'~%after : '~a'" before (format-entry entry))
+               (format nil "Updated-----------~%before: '~a'~%after : '~a'" before (mentat-db:format-entry entry))
                result-messages)))
           (format nil "~{~%~a~}" (nreverse result-messages)))
         (format nil "No entries to update."))))
@@ -122,12 +122,12 @@
   (message (add entrydata
                 #'(lambda (add entrydata)
                     (declare (ignore add))
-                    (add-entry entrydata)
+                    (mentat-db:add-entry entrydata)
                     (format nil "Added '~a'." entrydata)))
            (add entrydata schedule at timestamp
                 #'(lambda (add entrydata schedule at timestamp)
                     (declare (ignore add schedule at))
-                    (add-entry entrydata
+                    (mentat-db:add-entry entrydata
                                :scheduled timestamp)
                     (format nil "Added '~a', scheduled by ~a." entrydata (format-timestamp timestamp :as-scheduled t))))
            (add prio entrydata)
@@ -136,109 +136,109 @@
            (sortby what
                    #'(lambda (sortby what)
                        (declare (ignore sortby what))
-                       (format nil "Sorting by: ~a" *sortby-criterion*)))
+                       (format nil "Sorting by: ~a" mentat-db:*sortby-criterion*)))
            (sortby id
                    #'(lambda (sortby id)
                        (declare (ignore sortby id))
-                       (setf *sortby-criterion* "id")))
+                       (setf mentat-db:*sortby-criterion* "id")))
            (sortby status
                    #'(lambda (sortby status)
                        (declare (ignore sortby status))
-                       (setf *sortby-criterion* "status")))
+                       (setf mentat-db:*sortby-criterion* "status")))
            (sortby priority
                    #'(lambda (sortby priority)
                        (declare (ignore sortby priority))
-                       (setf *sortby-criterion* "priority")))
+                       (setf mentat-db:*sortby-criterion* "priority")))
            (sortby heading
                    #'(lambda (sortby heading)
                        (declare (ignore sortby heading))
-                       (setf *sortby-criterion* "heading")))
+                       (setf mentat-db:*sortby-criterion* "heading")))
            (sortby ts
                    #'(lambda (sortby ts)
                        (declare (ignore sortby ts))
-                       (setf *sortby-criterion* "ts_added")))
+                       (setf mentat-db:*sortby-criterion* "ts_added")))
            (print all #'(lambda (print all)
                           (declare (ignore print all))
-                          (let ((entries (list-entries)))
+                          (let ((entries (mentat-db:list-entries)))
                             (if (plusp (length entries))
-                                (format nil "entries:~{~%~a~}" (print-entries entries))
+                                (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                                 (format nil "No entries found.")))))
            (print org #'(lambda (print org)
                           (declare (ignore print org))
-                          (let ((entries (list-entries)))
+                          (let ((entries (mentat-db:list-entries)))
                             (if (plusp (length entries))
-                                (format nil "entries:~{~%~a~}" (print-entries entries :as-org t))
+                                (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries :as-org t))
                                 (format nil "No entries found.")))))
            (print raw #'(lambda (print raw)
                           (declare (ignore print raw))
                           (format nil "Not implemented yet.")))
            (print last #'(lambda (print last)
                            (declare (ignore print last))
-                           (let ((entries *last-query-result*))
+                           (let ((entries mentat-db:*last-query-result*))
                              (if (plusp (length entries))
-                                 (format nil "entries:~{~%~a~}" (print-entries entries))
+                                 (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                                  (format nil "No last query results.")))))
            (print last numbers added
                   #'(lambda (print last indexes added)
                       (declare (ignore print last added))
                       (if (listp indexes)
                           (format nil "Please provide a number of entries to show, it should not be multiple numbers.")
-                          (let ((entries (list-entries :sort-by "ts_added" :start (- (parse-integer indexes)))))
+                          (let ((entries (mentat-db:list-entries :sort-by "ts_added" :start (- (parse-integer indexes)))))
                             (if (plusp (length entries))
                                 (progn
-                                  (setf *last-query-result* entries)
-                                  (format nil "entries:~{~%~a~}" (print-entries entries)))
+                                  (setf mentat-db:*last-query-result* entries)
+                                  (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries)))
                                 (format nil "No entries found."))))))
            (print last added within relative-timestamp
                   #'(lambda (print last added within relative-timestamp)
                       (declare (ignore print last added within))
-                      (let ((entries (list-entries :sort-by "ts_added")))
+                      (let ((entries (mentat-db:list-entries :sort-by "ts_added")))
                         (setf entries (remove-if (complement
                                                   (lambda (entry) (timestamp-in-past-p
-                                                                   (parse-integer (get-entry-field entry "ts_added"))
+                                                                   (parse-integer (mentat-db:get-entry-field entry "ts_added"))
                                                                    :not-earlier-than relative-timestamp)))
                                                  entries))
                         (if (plusp (length entries))
                             (progn
-                              (setf *last-query-result* entries)
-                              (format nil "entries:~{~%~a~}" (print-entries entries)))
+                              (setf mentat-db:*last-query-result* entries)
+                              (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries)))
                             (format nil "No entries found.")))))
            (print last numbers updated
                   #'(lambda (print last indexes updated)
                       (declare (ignore print last updated))
                       (if (listp indexes)
                           (format nil "Please provide a number of entries to show, it should not be multiple numbers.")
-                          (let ((entries (list-entries :sort-by "ts_updated" :start (- (parse-integer indexes)))))
+                          (let ((entries (mentat-db:list-entries :sort-by "ts_updated" :start (- (parse-integer indexes)))))
                             (if (plusp (length entries))
                                 (progn
-                                  (setf *last-query-result* entries)
-                                  (format nil "entries:~{~%~a~}" (print-entries entries)))
+                                  (setf mentat-db:*last-query-result* entries)
+                                  (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries)))
                                 (format nil "No entries found."))))))
            (print last updated within relative-timestamp
                   #'(lambda (print last updated within relative-timestamp)
                       (declare (ignore print last updated within))
-                      (let ((entries (list-entries :sort-by "ts_updated")))
+                      (let ((entries (mentat-db:list-entries :sort-by "ts_updated")))
                         (setf entries (remove-if (complement
                                                   (lambda (entry) (timestamp-in-past-p
-                                                                   (parse-integer (get-entry-field entry "ts_updated"))
+                                                                   (parse-integer (mentat-db:get-entry-field entry "ts_updated"))
                                                                    :not-earlier-than relative-timestamp)))
                                                  entries))
                         (if (plusp (length entries))
                             (progn
-                              (setf *last-query-result* entries)
-                              (format nil "entries:~{~%~a~}" (print-entries entries)))
+                              (setf mentat-db:*last-query-result* entries)
+                              (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries)))
                             (format nil "No entries found.")))))
            (print timestamped #'(lambda (print timestamped)
                                   (declare (ignore print timestamped))
-                                  (let ((entries (find-timestamped-entries)))
+                                  (let ((entries (mentat-db:find-timestamped-entries)))
                                     (if (plusp (length entries))
-                                        (format nil "entries:~{~%~a~}" (print-entries entries))
+                                        (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                                         (format nil "No timestamped entries found.")))))
            (print timestamped today #'(lambda (print timestamped today)
                                         (declare (ignore print timestamped today))
-                                        (let ((entries (find-timestamped-entries :today t)))
+                                        (let ((entries (mentat-db:find-timestamped-entries :today t)))
                                           (if (plusp (length entries))
-                                              (format nil "entries:~{~%~a~}" (print-entries entries))
+                                              (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                                               (format nil "No timestamped entries found for today.")))))
            (drop numbers #'(lambda (drop indexes)
                              (declare (ignore drop))
@@ -249,9 +249,9 @@
            (drop last #'(lambda (drop last)
                           (declare (ignore drop last))
                           (let ((dropped-messages-list nil))
-                            (if *last-query-result*
+                            (if mentat-db:*last-query-result*
                                 (progn
-                                  (dolist (entry *last-query-result*)
+                                  (dolist (entry mentat-db:*last-query-result*)
                                     (push (drop-entry entry) dropped-messages-list))
                                   (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
                                 (format nil "No last query results.")))))
@@ -259,7 +259,7 @@
                  #'(lambda (drop last indexes)
                      (declare (ignore drop last))
                      (let ((dropped-messages-list nil))
-                       (if *last-query-result*
+                       (if mentat-db:*last-query-result*
                            (progn
                              (dolist (entry (pick-entries (ensure-list indexes) :last-query t))
                                (push (drop-entry entry) dropped-messages-list))
@@ -282,16 +282,16 @@
                        (declare (ignore update append heading))
                        (if (listp indexes)
                            (format nil "Cannot update headings in batch.")
-                           (let* ((entry (pick-entry (parse-integer indexes)))
-                                  (new-heading (concatenate 'string (get-entry-field entry "heading") " " entrydata)))
+                           (let* ((entry (mentat-db:pick-entry (parse-integer indexes)))
+                                  (new-heading (concatenate 'string (mentat-db:get-entry-field entry "heading") " " entrydata)))
                              (update-entries (ensure-list entry) "heading" new-heading)))))
            (update last numbers append heading entrydata
                    #'(lambda (update last indexes append heading entrydata)
                        (declare (ignore update last append heading))
                        (if (listp indexes)
                            (format nil "Cannot update headings in batch.")
-                           (let* ((entry (pick-entry (parse-integer indexes) :last-query t))
-                                  (new-heading (concatenate 'string (get-entry-field entry "heading") " " entrydata)))
+                           (let* ((entry (mentat-db:pick-entry (parse-integer indexes) :last-query t))
+                                  (new-heading (concatenate 'string (mentat-db:get-entry-field entry "heading") " " entrydata)))
                              (update-entries (ensure-list entry) "heading" new-heading)))))
            (update numbers set status entrystatus
                    #'(lambda (update indexes set status entrystatus)
@@ -300,7 +300,7 @@
            (update last set status entrystatus
                    #'(lambda (update last set status entrystatus)
                        (declare (ignore update last set status))
-                       (update-entries *last-query-result* "status" entrystatus)))
+                       (update-entries mentat-db:*last-query-result* "status" entrystatus)))
            (update last numbers set status entrystatus
                    #'(lambda (update last indexes set status entrystatus)
                        (declare (ignore update last set status))
@@ -312,7 +312,7 @@
            (update last set tags colon manytags
                    #'(lambda (update last set tags colon manytags)
                        (declare (ignore update last set tags colon))
-                       (update-entries *last-query-result* "tags" (ensure-list manytags))))
+                       (update-entries mentat-db:*last-query-result* "tags" (ensure-list manytags))))
            (update last numbers set tags colon manytags
                    #'(lambda (update last indexes set tags colon manytags)
                        (declare (ignore update last set tags colon))
@@ -324,7 +324,7 @@
            (update last set tags none
                    #'(lambda (update last set tags none)
                        (declare (ignore update last set tags none))
-                       (update-entries *last-query-result* "tags" nil)))
+                       (update-entries mentat-db:*last-query-result* "tags" nil)))
            (update last numbers set tags none
                    #'(lambda (update last indexes set tags none)
                        (declare (ignore update last set tags none))
@@ -336,7 +336,7 @@
            (update last set priority prio
                    #'(lambda (update last set priority prio)
                        (declare (ignore update last set priority))
-                       (update-entries *last-query-result* "priority" prio)))
+                       (update-entries mentat-db:*last-query-result* "priority" prio)))
            (update last numbers set priority prio
                    #'(lambda (update last indexes set priority prio)
                        (declare (ignore update last set priority))
@@ -354,11 +354,11 @@
            (schedule last at timestamp
                      #'(lambda (schedule last at timestamp)
                          (declare (ignore schedule last at))
-                         (update-entries *last-query-result* "scheduled" timestamp)))
+                         (update-entries mentat-db:*last-query-result* "scheduled" timestamp)))
            (unschedule last
                        #'(lambda (unschedule last)
                            (declare (ignore unschedule last))
-                           (update-entries *last-query-result* "scheduled" nil)))
+                           (update-entries mentat-db:*last-query-result* "scheduled" nil)))
            (schedule last numbers at timestamp
                      #'(lambda (schedule last indexes at timestamp)
                          (declare (ignore schedule last at))
@@ -382,11 +382,11 @@
            (deadline last at timestamp
                      #'(lambda (deadline last at timestamp)
                          (declare (ignore deadline last at))
-                         (update-entries *last-query-result* "deadline" timestamp)))
+                         (update-entries mentat-db:*last-query-result* "deadline" timestamp)))
            (undeadline last
                        #'(lambda (undeadline last)
                            (declare (ignore undeadline last))
-                           (update-entries *last-query-result* "deadline" nil)))
+                           (update-entries mentat-db:*last-query-result* "deadline" nil)))
            (deadline last numbers at timestamp
                      #'(lambda (deadline last indexes at timestamp)
                          (declare (ignore deadline last at))
@@ -400,27 +400,27 @@
            (search priority prio
                    #'(lambda (search priority prio)
                        (declare (ignore search))
-                       (let ((entries (list-entries :field priority :value prio)))
+                       (let ((entries (mentat-db:list-entries :field priority :value prio)))
                          (if (plusp (length entries))
-                             (format nil "entries:~{~%~a~}" (print-entries entries))
+                             (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                              (format nil "No entries found.")))))
            (search heading entrydata
                    #'(lambda (search heading entrydata)
                        (declare (ignore search))
-                       (let ((entries (list-entries :field heading :value entrydata)))
+                       (let ((entries (mentat-db:list-entries :field heading :value entrydata)))
                          (if (plusp (length entries))
-                             (format nil "entries:~{~%~a~}" (print-entries entries))
+                             (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                              (format nil "No entries found.")))))
            (search tags colon manytags
                    #'(lambda (search tags colon manytags)
                        (declare (ignore search tags colon))
-                       (let ((entries (list-entries :field "tags" :value (ensure-list manytags))))
+                       (let ((entries (mentat-db:list-entries :field "tags" :value (ensure-list manytags))))
                          (if (plusp (length entries))
-                             (format nil "entries:~{~%~a~}" (print-entries entries))
+                             (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                              (format nil "No entries found.")))))
            (cleardb #'(lambda (cleardb)
                         (declare (ignore cleardb))
-                        (clear-entries)
+                        (mentat-db:clear-entries)
                         (format nil "DB wiped.")))
            (usage #'(lambda (usage)
                       (declare (ignore usage))

@@ -10,7 +10,7 @@
     # https://www.darkchestnut.com/2016/dont-put-quicklisp-in-your-binary-just-because-a-library-demands-it/
     # https://www.darkchestnut.com/2016/keep-quicklisp-and-qlot-out-of-your-application-binary/
     - name: build xmpp binary
-      shell: "sbcl --eval \"(ql:quickload 'mentat)\" --eval \"(mentat::save-image-xmpp-bot)\""
+      shell: "sbcl --eval \"(ql:quickload 'mentat-xmpp)\" --eval \"(mentat-xmpp::save-image-xmpp-bot)\""
 
 - hosts: botservers
   gather_facts: no
@@ -25,6 +25,9 @@
 
     - name: copy compiled xmpp binary to remote server
       copy: src=../deploy/{{ xmpp_binary_name }} dest=/home/{{ username }}
+
+    - name: copy xmpp config to remote server
+      copy: src=../src/bot/config.lisp dest=/home/{{ username }}/xmpp-config.lisp
 
     - name: copy xmpp logrotate config to remote server
       copy:

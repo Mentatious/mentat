@@ -26,6 +26,9 @@
     - name: copy compiled webserver binary to remote server
       copy: src=../deploy/{{ webserver_binary_name }} dest=/home/{{ username }}
 
+    - name: copy webserver config to remote server
+      copy: src=../src/webserver/config.lisp dest=/home/{{ username }}/webserver-config.lisp
+
     - name: set webserver binary attrs
       file: path=/home/{{ username }}/{{ webserver_binary_name }} mode=u+rwx
 

@@ -7,8 +7,8 @@
    :port 4007
    :style swank:*communication-style*
    :dont-close t)
-  (mentat::load-config)
-  (mentat::init-storage)
+  (mentat-util:load-config "webserver-config.lisp")
+  (mentat-db:init-storage *db-name*)
   (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 4242))
   (sb-thread:join-thread
    (find-if
@@ -27,8 +27,8 @@
 (hunchentoot:define-easy-handler (test-uri :uri "/mentat.org"
                                            :default-request-type :get) (username)
   (setf (hunchentoot:content-type*) "text/plain")
-  (mentat::set-user-context username)
-  (let ((entries (mentat::print-entries (mentat::list-entries) :as-org t)))
+  (mentat-db:set-user-context username *entries-collection-prefix*)
+  (let ((entries (mentat-db:print-entries (mentat-db:list-entries) :as-org t)))
     (if (plusp (length entries))
         (format nil "~{~%~a~}" entries)
         (format nil "No entries found."))))

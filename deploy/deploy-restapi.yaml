@@ -29,6 +29,9 @@
     - name: set restapi binary attrs
       file: path=/home/{{ username }}/{{ restapi_binary_name }} mode=u+rwx
 
+    - name: copy restapi config to remote server
+      copy: src=../src/restapi/config.lisp dest=/home/{{ username }}/restapi-config.lisp
+
     - name: restart mentat-restapi service on remote server
       supervisorctl: name=mentat-restapi state=restarted
       become: yes

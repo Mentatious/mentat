@@ -1,19 +1,37 @@
-(in-package #:mentat)
+(defpackage #:mentat-db
+  (:use #:cl)
+  (:export #:*last-query-result*
+           #:*sortby-criterion*
+           #:init-storage
+           #:set-user-context
+           #:add-entry
+           #:set-entry-field
+           #:get-entry-field
+           #:clear-entries
+           #:format-entry
+           #:find-timestamped-entries
+           #:find-all-timestamped-entries-by-collection
+           #:list-entries
+           #:print-entries
+           #:pick-entry))
 
-(defun init-storage ()
-  (with-check-connection
-    (cl-mongo:db.use mentat-config::*db-name*)))
+(in-package #:mentat-db)
 
 (defparameter *current-collection-name* nil)
-
 (defparameter *last-query-result* nil)
+(defparameter *mentat-db-prefix* "mentat.")
+(defparameter *sortby-criterion* "ts_added")
 
-(defun set-user-context (username)
+(defun init-storage (dbname)
+  (mentat-util:with-check-connection
+    (cl-mongo:db.use dbname)))
+
+(defun set-user-context (username prefix)
   (setf *current-collection-name*
-        (concatenate 'string mentat-config::*entries-collection-prefix* "-" username)))
+        (concatenate 'string prefix "-" username)))
 
 (defun add-entry (heading &key (status "") (priority "") (tags nil) (scheduled nil) (deadline nil))
-  (with-check-connection
+  (mentat-util:with-check-connection
     (let* ((doc (cl-mongo:make-document))
            (ts_added (get-universal-time))
            (ts_updated ts_added))
@@ -29,7 +47,6 @@
       (cl-mongo:db.insert *current-collection-name* doc)
       )))
 
-
 (defun set-entry-field (entry field value &key (save-entry t))
   (cond ((listp value) (cl-mongo:add-element field value entry))
         ((stringp value) (cl-mongo:add-element field (string-trim '(#\Space) value) entry))
@@ -40,8 +57,6 @@
 
 (defun get-entry-field (entry field)
   (cl-mongo:get-element field entry))
-
-(defparameter *mentat-db-prefix* "mentat.")
 
 (defun get-user-collection-names ()
   (mapcar #'(lambda (name) (subseq name (length *mentat-db-prefix*)))
@@ -57,7 +72,7 @@
                    (cl-mongo:docs (cl-mongo:db.collections))))))
 
 (defun clear-entries ()
-  (with-check-connection
+  (mentat-util:with-check-connection
     (cl-mongo:rm *current-collection-name* :all)))
 
 (defun format-entry (doc)
@@ -92,10 +107,8 @@
                      (format-timestamp deadline :as-deadline t)
                      "")))))
 
-(defparameter *sortby-criterion* "ts_added")
-
 (defun find-entries-sorted (&key (field nil) (value nil) (sort-by *sortby-criterion*))
-  (with-check-connection
+  (mentat-util:with-check-connection
     (cl-mongo:docs
      (cl-mongo:iter
       (cl-mongo:db.find
@@ -114,7 +127,7 @@
 ;;TODO: find less straightforward/more clever way to filter by lists
 (defun find-entries-by-list-sorted (&key (field nil) (value nil) (sort-by *sortby-criterion*))
   (declare (ignore field value))
-  (with-check-connection
+  (mentat-util:with-check-connection
     (let ((docs-ordered
            (cl-mongo:docs
             (cl-mongo:iter
@@ -126,7 +139,7 @@
                (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
                                                    (cl-mongo:kv sort-by 1))))
               :limit 0)))))
-      (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
+      (format t "~&docs-ordered: ~a" docs-ordered)
       (if (and field value (listp value))
           (remove-if
            (complement
@@ -135,7 +148,7 @@
           docs-ordered))))
 
 (defun find-entries-nonempty-field (collection field)
-  (with-check-connection
+  (mentat-util:with-check-connection
     (let ((docs-ordered
            (cl-mongo:docs
             (cl-mongo:iter
@@ -146,7 +159,7 @@
                             (cl-mongo:$!= field nil))
                (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
                                                    (cl-mongo:kv field 1)))) :limit 0)))))
-      (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
+      (format t "~&docs-ordered: ~a" docs-ordered)
       docs-ordered)))
 
 (defun find-timestamped-entries (&key (collection *current-collection-name*) (today nil))
@@ -171,7 +184,7 @@
     all-entries))
 
 (defun list-entries (&key (field nil) (value nil) (sort-by *sortby-criterion*) (start 0) (end nil))
-  (with-check-connection
+  (mentat-util:with-check-connection
       (let ((results (cond ((and value (listp value)) (find-entries-by-list-sorted :field field
                                                                                    :value value
                                                                                    :sort-by sort-by))

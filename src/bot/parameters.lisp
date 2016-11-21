@@ -1,7 +1,4 @@
-(defpackage #:mentat-config
-  (:use #:cl))
-
-(in-package #:mentat-config)
+(in-package #:mentat-xmpp)
 
 (defparameter *db-name* nil
   "Mongo DB name")
@@ -15,9 +12,6 @@
   "xmpp server")
 (defparameter *xmpp-resource* nil
   "xmpp resource")
-(defparameter *xmpp-notifier-resource* nil
-  "xmpp resource for notifier")
-
 ;; TODO: provide setting up timezone info on per-user basis
 ;; (HINT: use bot commands + persistent storage, same as `sortby', for example)
 (defparameter *client-timezone* nil

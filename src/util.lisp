@@ -1,4 +1,17 @@
-(in-package #:mentat)
+(defpackage #:mentat-util
+  (:use #:cl)
+  (:export #:with-interactive-interrupt
+           #:with-check-connection
+           #:load-config
+           #:format-timestamp
+           #:starts-with-nick
+           #:ensure-list
+           #:timestamp-in-future-p
+           #:timestamp-in-past-p
+           #:adjust-universal-timestamp
+           #:timestamp-is-today-p))
+
+(in-package #:mentat-util)
 
 (defmacro with-interactive-interrupt (&body body)
   `(handler-case
@@ -11,7 +24,7 @@
   `(handler-case
        (progn ,@body)
      (usocket:connection-refused-error (error)
-       (format xmpp:*debug-stream* "[check-connection] ERROR: ~a~%Exiting...~%" error))))
+       (format t "[check-connection] ERROR: ~a~%Exiting...~%" error))))
 
 (defun load-config (&optional (filename "config.lisp"))
   (handler-case (load filename :verbose t :print t)

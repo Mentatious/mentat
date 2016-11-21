@@ -9,11 +9,11 @@
    :port 4008
    :style swank:*communication-style*
    :dont-close t)
-  (mentat::load-config)
+  (mentat-util:load-config "notifier-config.lisp")
   (local-time:reread-timezone-repository
-   :timezone-repository (pathname mentat-config::*timezone-repository-system-path*))
-  (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name mentat-config::*client-timezone*))
-  (mentat::init-storage)
+   :timezone-repository (pathname *timezone-repository-system-path*))
+  (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name *client-timezone*))
+  (mentat-db:init-storage *db-name*)
   (cl-cron:make-cron-job 'check-update-notifications :step-min 1)
   (cl-cron:start-cron)
   (bordeaux-threads::join-thread cl-cron::*cron-dispatcher-thread*))
@@ -30,19 +30,19 @@
   (maphash
    (lambda (user entries)
      (dolist (entry entries)
-       (let* ((scheduled (mentat::get-entry-field entry "scheduled"))
-              (deadline (mentat::get-entry-field entry "deadline"))
-              (id (mentat::get-entry-field entry "entry_id")))
+       (let* ((scheduled (mentat-db:get-entry-field entry "scheduled"))
+              (deadline (mentat-db:get-entry-field entry "deadline"))
+              (id (mentat-db:get-entry-field entry "entry_id")))
          (when scheduled
            (process-timestamp scheduled "scheduled_" id user entry))
          (when deadline
            (process-timestamp deadline "deadline_" id user entry)))))
-   (mentat::find-all-timestamped-entries-by-collection)))
+   (mentat-db:find-all-timestamped-entries-by-collection)))
 
 (defun process-timestamp (timestamp prefix id user entry)
   (let* ((timer-id (concatenate 'string prefix id))
          (existing-timer (gethash timer-id *timers*)))
-    (when (mentat::timestamp-in-future-p timestamp)
+    (when (mentat-util:timestamp-in-future-p timestamp)
       (unless existing-timer
         (setf existing-timer
               (trivial-timers:make-timer
@@ -53,11 +53,11 @@
       (unless (trivial-timers:timer-scheduled-p existing-timer)
         (trivial-timers:schedule-timer
          existing-timer
-         (mentat::adjust-universal-timestamp timestamp :offset-hours 1)
+         (mentat-util:adjust-universal-timestamp timestamp :offset-hours 1)
          :absolute-p t)))))
 
 (defun handle-notification (timer-id user entry)
-  (mentat::connect-and-send user
-                            (mentat::format-entry entry)
-                            :resource mentat-config::*xmpp-notifier-resource*)
+  (mentat-xmpp::connect-and-send user
+                                 (mentat-db:format-entry entry)
+                                 :resource *xmpp-notifier-resource*)
   (remhash timer-id *timers*))
