@@ -63,7 +63,7 @@
           (remove-if
            #'(lambda (str)
                (or (search "$_id_" str :from-end t)
-                   ;; FIXME: *headings should be remove from DB and hence from here as it's an dev artifact ;)
+                   ;; FIXME: *headings should be removed from DB and hence from here as it's a dev artifact ;)
                    (member str (mapcar #'(lambda (name) (concatenate 'string *mentat-db-prefix* name))
                                        '("system.indexes" "headings"))
                            :test #'equal)))
