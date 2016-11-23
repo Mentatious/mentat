@@ -4,3 +4,8 @@ xmpp_binary_name: mentat-xmpp-bot
 webserver_binary_name: mentat-webserver
 notifier_binary_name: mentat-notifier
 restapi_binary_name: mentat-restapi
+binary_names:
+  - "{{ xmpp_binary_name }}"
+  - "{{ webserver_binary_name }}"
+  - "{{ notifier_binary_name }}"
+  - "{{ restapi_binary_name }}"
