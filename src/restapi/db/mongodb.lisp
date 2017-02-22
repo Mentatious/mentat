@@ -2,15 +2,16 @@
 
 (defun init-storage ()
   (with-check-connection
-    (cl-mongo:db.use mentat-config::*db-name*)))
+    (cl-mongo:db.use *db-name*)))
 
 (defparameter *current-collection-name* nil)
-
 (defparameter *last-query-result* nil)
+(defparameter *mentat-db-prefix* "mentat.")
+(defparameter *sortby-criterion* "ts_added")
 
 (defun set-user-context (username)
   (setf *current-collection-name*
-        (concatenate 'string mentat-config::*entries-collection-prefix* "-" username)))
+        (concatenate 'string *entries-collection-prefix* "-" username)))
 
 (defun add-entry (heading &key (status "") (priority "") (tags nil) (scheduled nil) (deadline nil))
   (with-check-connection
@@ -40,8 +41,6 @@
 
 (defun get-entry-field (entry field)
   (cl-mongo:get-element field entry))
-
-(defparameter *mentat-db-prefix* "mentat.")
 
 (defun get-user-collection-names ()
   (mapcar #'(lambda (name) (subseq name (length *mentat-db-prefix*)))
@@ -91,8 +90,6 @@
                  (if deadline
                      (format-timestamp deadline :as-deadline t)
                      "")))))
-
-(defparameter *sortby-criterion* "ts_added")
 
 (defun find-entries-sorted (&key (field nil) (value nil) (sort-by *sortby-criterion*))
   (with-check-connection

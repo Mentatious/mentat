@@ -3,8 +3,7 @@
   :author "Alex Ermolov <aaermolov@gmail.com>"
   ;TODO: provide license clause
   :version "0.1"
-  :depends-on (#:mentat
-               #:unix-opts
+  :depends-on (#:unix-opts
                #:cl-mongo
                #:clack
                #:lack-middleware-backtrace
