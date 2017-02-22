@@ -41,7 +41,7 @@
 ;;FIXME: do not cherry-pick entries in batch
 (defun pick-entries (numbers &key (last-query nil))
   (let ((entries-to-process nil))
-    (dolist (entry (mapcar #'parse-integer (ensure-list numbers)))
+    (dolist (entry (mapcar #'parse-integer (mentat-util:ensure-list numbers)))
       (let ((picked-entry (mentat-db:pick-entry entry :last-query last-query)))
         (when picked-entry
           (push picked-entry entries-to-process))))
@@ -129,7 +129,7 @@
                     (declare (ignore add schedule at))
                     (mentat-db:add-entry entrydata
                                :scheduled timestamp)
-                    (format nil "Added '~a', scheduled by ~a." entrydata (format-timestamp timestamp :as-scheduled t))))
+                    (format nil "Added '~a', scheduled by ~a." entrydata (mentat-util:format-timestamp timestamp :as-scheduled t))))
            (add prio entrydata)
            (add todo entrydata)
            (add todo prio entrydata)
@@ -243,7 +243,7 @@
            (drop numbers #'(lambda (drop indexes)
                              (declare (ignore drop))
                              (let ((dropped-messages-list nil))
-                               (dolist (entry (pick-entries (ensure-list indexes)))
+                               (dolist (entry (pick-entries (mentat-util:ensure-list indexes)))
                                  (push (drop-entry entry) dropped-messages-list))
                                (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))))
            (drop last #'(lambda (drop last)
@@ -261,7 +261,7 @@
                      (let ((dropped-messages-list nil))
                        (if mentat-db:*last-query-result*
                            (progn
-                             (dolist (entry (pick-entries (ensure-list indexes) :last-query t))
+                             (dolist (entry (pick-entries (mentat-util:ensure-list indexes) :last-query t))
                                (push (drop-entry entry) dropped-messages-list))
                              (format nil "~{~%Dropped '~a'~}" (nreverse dropped-messages-list)))
                            (format nil "No last query results.")))))
@@ -270,13 +270,13 @@
                        (declare (ignore update set heading))
                        (if (listp indexes)
                            (format nil "Cannot update headings in batch.")
-                           (update-entries (pick-entries (ensure-list indexes)) "heading" entrydata))))
+                           (update-entries (pick-entries (mentat-util:ensure-list indexes)) "heading" entrydata))))
            (update last numbers set heading entrydata
                    #'(lambda (update last indexes set heading entrydata)
                        (declare (ignore update last set heading))
                        (if (listp indexes)
                            (format nil "Cannot update headings in batch.")
-                           (update-entries (pick-entries (ensure-list indexes) :last-query t) "heading" entrydata))))
+                           (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t) "heading" entrydata))))
            (update numbers append heading entrydata
                    #'(lambda (update indexes append heading entrydata)
                        (declare (ignore update append heading))
@@ -284,7 +284,7 @@
                            (format nil "Cannot update headings in batch.")
                            (let* ((entry (mentat-db:pick-entry (parse-integer indexes)))
                                   (new-heading (concatenate 'string (mentat-db:get-entry-field entry "heading") " " entrydata)))
-                             (update-entries (ensure-list entry) "heading" new-heading)))))
+                             (update-entries (mentat-util:ensure-list entry) "heading" new-heading)))))
            (update last numbers append heading entrydata
                    #'(lambda (update last indexes append heading entrydata)
                        (declare (ignore update last append heading))
@@ -292,11 +292,11 @@
                            (format nil "Cannot update headings in batch.")
                            (let* ((entry (mentat-db:pick-entry (parse-integer indexes) :last-query t))
                                   (new-heading (concatenate 'string (mentat-db:get-entry-field entry "heading") " " entrydata)))
-                             (update-entries (ensure-list entry) "heading" new-heading)))))
+                             (update-entries (mentat-util:ensure-list entry) "heading" new-heading)))))
            (update numbers set status entrystatus
                    #'(lambda (update indexes set status entrystatus)
                        (declare (ignore update set status))
-                       (update-entries (pick-entries (ensure-list indexes)) "status" entrystatus)))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes)) "status" entrystatus)))
            (update last set status entrystatus
                    #'(lambda (update last set status entrystatus)
                        (declare (ignore update last set status))
@@ -304,23 +304,23 @@
            (update last numbers set status entrystatus
                    #'(lambda (update last indexes set status entrystatus)
                        (declare (ignore update last set status))
-                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "status" entrystatus)))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t) "status" entrystatus)))
            (update numbers set tags colon manytags
                    #'(lambda (update indexes set tags colon manytags)
                        (declare (ignore update set tags colon))
-                       (update-entries (pick-entries (ensure-list indexes)) "tags" (ensure-list manytags))))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes)) "tags" (mentat-util:ensure-list manytags))))
            (update last set tags colon manytags
                    #'(lambda (update last set tags colon manytags)
                        (declare (ignore update last set tags colon))
-                       (update-entries mentat-db:*last-query-result* "tags" (ensure-list manytags))))
+                       (update-entries mentat-db:*last-query-result* "tags" (mentat-util:ensure-list manytags))))
            (update last numbers set tags colon manytags
                    #'(lambda (update last indexes set tags colon manytags)
                        (declare (ignore update last set tags colon))
-                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "tags" (ensure-list manytags))))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t) "tags" (mentat-util:ensure-list manytags))))
            (update numbers set tags none
                    #'(lambda (update indexes set tags none)
                        (declare (ignore update set tags none))
-                       (update-entries (pick-entries (ensure-list indexes)) "tags" nil)))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes)) "tags" nil)))
            (update last set tags none
                    #'(lambda (update last set tags none)
                        (declare (ignore update last set tags none))
@@ -328,11 +328,11 @@
            (update last numbers set tags none
                    #'(lambda (update last indexes set tags none)
                        (declare (ignore update last set tags none))
-                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "tags" nil)))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t) "tags" nil)))
            (update numbers set priority prio
                    #'(lambda (update indexes set priority prio)
                        (declare (ignore update set priority))
-                       (update-entries (pick-entries (ensure-list indexes)) "priority" prio)))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes)) "priority" prio)))
            (update last set priority prio
                    #'(lambda (update last set priority prio)
                        (declare (ignore update last set priority))
@@ -340,16 +340,16 @@
            (update last numbers set priority prio
                    #'(lambda (update last indexes set priority prio)
                        (declare (ignore update last set priority))
-                       (update-entries (pick-entries (ensure-list indexes) :last-query t) "priority" prio)))
+                       (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t) "priority" prio)))
            (schedule numbers at timestamp
                      #'(lambda (schedule indexes at timestamp)
                          (declare (ignore schedule at))
-                         (update-entries (pick-entries (ensure-list indexes))
+                         (update-entries (pick-entries (mentat-util:ensure-list indexes))
                                          "scheduled" timestamp)))
            (unschedule numbers
                        #'(lambda (unschedule indexes)
                            (declare (ignore unschedule))
-                           (update-entries (pick-entries (ensure-list indexes))
+                           (update-entries (pick-entries (mentat-util:ensure-list indexes))
                                            "scheduled" nil)))
            (schedule last at timestamp
                      #'(lambda (schedule last at timestamp)
@@ -362,22 +362,22 @@
            (schedule last numbers at timestamp
                      #'(lambda (schedule last indexes at timestamp)
                          (declare (ignore schedule last at))
-                         (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                         (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t)
                                          "scheduled" timestamp)))
            (unschedule last numbers
                        #'(lambda (unschedule last indexes)
                            (declare (ignore unschedule last))
-                           (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                           (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t)
                                            "scheduled" nil)))
            (deadline numbers at timestamp
                      #'(lambda (deadline indexes at timestamp)
                          (declare (ignore deadline at))
-                         (update-entries (pick-entries (ensure-list indexes))
+                         (update-entries (pick-entries (mentat-util:ensure-list indexes))
                                          "deadline" timestamp)))
            (undeadline numbers
                        #'(lambda (undeadline indexes)
                            (declare (ignore undeadline))
-                           (update-entries (pick-entries (ensure-list indexes))
+                           (update-entries (pick-entries (mentat-util:ensure-list indexes))
                                            "deadline" nil)))
            (deadline last at timestamp
                      #'(lambda (deadline last at timestamp)
@@ -390,12 +390,12 @@
            (deadline last numbers at timestamp
                      #'(lambda (deadline last indexes at timestamp)
                          (declare (ignore deadline last at))
-                         (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                         (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t)
                                          "deadline" timestamp)))
            (undeadline last numbers
                        #'(lambda (undeadline last indexes)
                            (declare (ignore undeadline last))
-                           (update-entries (pick-entries (ensure-list indexes) :last-query t)
+                           (update-entries (pick-entries (mentat-util:ensure-list indexes) :last-query t)
                                            "deadline" nil)))
            (search priority prio
                    #'(lambda (search priority prio)
@@ -414,7 +414,7 @@
            (search tags colon manytags
                    #'(lambda (search tags colon manytags)
                        (declare (ignore search tags colon))
-                       (let ((entries (mentat-db:list-entries :field "tags" :value (ensure-list manytags))))
+                       (let ((entries (mentat-db:list-entries :field "tags" :value (mentat-util:ensure-list manytags))))
                          (if (plusp (length entries))
                              (format nil "entries:~{~%~a~}" (mentat-db:print-entries entries))
                              (format nil "No entries found.")))))

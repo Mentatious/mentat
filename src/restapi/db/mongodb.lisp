@@ -126,7 +126,7 @@
                (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
                                                    (cl-mongo:kv sort-by 1))))
               :limit 0)))))
-      (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
+      (format t "~&docs-ordered: ~a" docs-ordered)
       (if (and field value (listp value))
           (remove-if
            (complement
@@ -146,7 +146,7 @@
                             (cl-mongo:$!= field nil))
                (cl-mongo:kv "orderby" (cl-mongo:kv (cl-mongo:kv "db" 1)
                                                    (cl-mongo:kv field 1)))) :limit 0)))))
-      (format xmpp:*debug-stream* "~&docs-ordered: ~a" docs-ordered)
+      (format t "~&docs-ordered: ~a" docs-ordered)
       docs-ordered)))
 
 (defun find-timestamped-entries (&key (collection *current-collection-name*) (today nil))

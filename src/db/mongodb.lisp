@@ -101,10 +101,10 @@
                      (format nil ":~{~a:~} " tags)
                      "")
                  (if scheduled
-                     (concatenate 'string (format-timestamp scheduled :as-scheduled t) " ")
+                     (concatenate 'string (mentat-util:format-timestamp scheduled :as-scheduled t) " ")
                      "")
                  (if deadline
-                     (format-timestamp deadline :as-deadline t)
+                     (mentat-util:format-timestamp deadline :as-deadline t)
                      "")))))
 
 (defun find-entries-sorted (&key (field nil) (value nil) (sort-by *sortby-criterion*))
