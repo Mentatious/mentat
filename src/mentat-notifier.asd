@@ -3,7 +3,9 @@
   :author "Alex Ermolov <aaermolov@gmail.com>"
   ;TODO: provide license clause
   :version "0.1"
-  :depends-on (#:mentat-xmpp
+  :depends-on (#:mentat-util
+               #:mentat-db
+               #:mentat-xmpp-engine
                #:unix-opts
                #:cl-mongo
                #:split-sequence
@@ -17,8 +19,5 @@
   :serial t
   :components ((:file "notifier/package")
                (:file "notifier/parameters")
-               (:file "util")
-               (:file "bot/xmpp-engine")
-               (:file "db/mongodb")
                (:file "notifier/notifier")
                ))

@@ -3,7 +3,8 @@
   :author "Alex Ermolov <aaermolov@gmail.com>"
   ;TODO: provide license clause
   :version "0.1"
-  :depends-on (#:unix-opts
+  :depends-on (#:mentat-util
+               #:unix-opts
                #:cl-mongo
                #:clack
                #:lack-middleware-backtrace
@@ -15,7 +16,6 @@
   :serial t
   :components ((:file "restapi/package")
                (:file "restapi/parameters")
-               (:file "util")
                (:file "restapi/config")
                (:file "restapi/db/mongodb")
                (:file "restapi/restapi")

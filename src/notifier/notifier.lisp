@@ -57,7 +57,7 @@
          :absolute-p t)))))
 
 (defun handle-notification (timer-id user entry)
-  (mentat-xmpp::connect-and-send user
-                                 (mentat-db:format-entry entry)
-                                 :resource *xmpp-notifier-resource*)
+  (mentat-xmpp-engine::connect-and-send user
+                                        (mentat-db:format-entry entry)
+                                        :resource *xmpp-notifier-resource*)
   (remhash timer-id *timers*))

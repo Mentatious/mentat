@@ -1,4 +1,21 @@
-(in-package #:mentat-xmpp)
+(defpackage #:mentat-xmpp-engine
+  (:use #:cl)
+  (:export #:*last-query-result*
+           #:*sortby-criterion*
+           #:init-storage
+           #:set-user-context
+           #:add-entry
+           #:set-entry-field
+           #:get-entry-field
+           #:clear-entries
+           #:format-entry
+           #:find-timestamped-entries
+           #:find-all-timestamped-entries-by-collection
+           #:list-entries
+           #:print-entries
+           #:pick-entry))
+
+(in-package #:mentat-xmpp-engine)
 
 (defmethod xmpp:message ((connection xmpp:connection)
                          to body &key id (type :chat) xhtml-body)

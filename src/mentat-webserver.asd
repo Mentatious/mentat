@@ -3,7 +3,9 @@
   :author "Alex Ermolov <aaermolov@gmail.com>"
   ;TODO: provide license clause
   :version "0.1"
-  :depends-on (#:unix-opts
+  :depends-on (#:mentat-util
+               #:mentat-db
+               #:unix-opts
                #:cl-mongo
                #:local-time
                #:hunchentoot
@@ -13,7 +15,5 @@
   :serial t
   :components ((:file "webserver/package")
                (:file "webserver/parameters")
-               (:file "util")
-               (:file "db/mongodb")
                (:file "webserver/webserver")
                ))
