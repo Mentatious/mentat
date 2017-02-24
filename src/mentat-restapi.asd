@@ -14,9 +14,10 @@
                #:cl-json
                #:swank)
   :serial t
-  :components ((:file "restapi/package")
-               (:file "restapi/parameters")
-               (:file "restapi/config")
-               (:file "restapi/db/mongodb")
-               (:file "restapi/restapi")
+  :pathname "restapi"
+  :components ((:file "package")
+               (:file "parameters")
+               (:file "config")
+               (:file "db/mongodb")
+               (:file "restapi")
                ))

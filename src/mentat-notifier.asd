@@ -17,7 +17,8 @@
                #:uuid
                #:swank)
   :serial t
-  :components ((:file "notifier/package")
-               (:file "notifier/parameters")
-               (:file "notifier/notifier")
+  :pathname "notifier"
+  :components ((:file "package")
+               (:file "parameters")
+               (:file "notifier")
                ))

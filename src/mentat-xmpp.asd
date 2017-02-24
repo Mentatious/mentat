@@ -17,6 +17,7 @@
                #:uuid
                #:swank)
   :serial t
-  :components ((:file "bot/package")
-               (:file "bot/parameters")
-               (:file "bot/bot")))
+  :pathname "bot"
+  :components ((:file "package")
+               (:file "parameters")
+               (:file "bot")))

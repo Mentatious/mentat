@@ -13,7 +13,8 @@
                #:alexandria
                #:swank)
   :serial t
-  :components ((:file "webserver/package")
-               (:file "webserver/parameters")
-               (:file "webserver/webserver")
+  :pathname "webserver"
+  :components ((:file "package")
+               (:file "parameters")
+               (:file "webserver")
                ))
