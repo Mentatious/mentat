@@ -14,6 +14,10 @@
    (lack.request::request-content ningle:*request*)
    :external-format :utf8))
 
+(setf (ningle:route *app* "/api/v1" :method :post)
+      #'(lambda (params)
+          (json:encode-json-to-string '((result . ok)))))
+
 (setf (ningle:route *app* "/entries" :method :get)
       #'(lambda (params)
           (json:encode-json-to-string `((entries . ,*entries*) (result . ok)))
