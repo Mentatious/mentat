@@ -1,0 +1,44 @@
+("quicklisp" .
+ (:class qlot.source.ql:source-ql-all
+  :initargs (:project-name "quicklisp" :%version :latest)
+  :version "2017-01-24"))
+("unix-opts" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "unix-opts" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("cl-mongo" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "cl-mongo" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("split-sequence" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "split-sequence" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("alexandria" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "alexandria" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("local-time" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "local-time" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("trivial-timers" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "trivial-timers" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("cl-cron" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "cl-cron" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("bordeaux-threads" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "bordeaux-threads" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("uuid" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "uuid" :%version "2017-01-24")
+  :version "ql-2017-01-24"))
+("slime" .
+ (:class qlot.source.ql:source-ql
+  :initargs (:project-name "slime" :%version "2017-01-24")
+  :version "ql-2017-01-24"))

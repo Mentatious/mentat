@@ -8,7 +8,8 @@
 (defparameter *entries* nil)
 
 #+sbcl
-(defun restapi-main ()
+(defun restapi-main (argv)
+  (declare (ignore argv))
   (setq swank:*use-dedicated-output-stream* nil)
   (swank:create-server
    :port 4009
@@ -33,10 +34,3 @@
   (json:encode-json-to-string `((entries . ,*entries*) (result . ok))))
 
 ;; TODO: reimplement "/entries" for POST
-
-(defun save-image-restapi ()
-  (swank-loader::init :load-contribs t)
-  (sb-ext:save-lisp-and-die "mentat-restapi"
-                            :compression t
-                            :executable t
-                            :toplevel #'restapi-main))

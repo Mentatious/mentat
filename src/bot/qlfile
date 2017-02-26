@@ -1,0 +1,10 @@
+ql unix-opts 2017-01-24
+ql cl-mongo 2017-01-24
+ql split-sequence 2017-01-24
+ql alexandria 2017-01-24
+ql cxml 2017-01-24
+ql cl-lex 2017-01-24
+git cl-yacc https://github.com/jech/cl-yacc
+ql local-time 2017-01-24
+ql uuid 2017-01-24
+ql slime 2017-01-24

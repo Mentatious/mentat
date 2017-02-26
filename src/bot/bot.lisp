@@ -5,7 +5,8 @@
   "XMPP connection")
 
 #+sbcl
-(defun main-xmpp-bot ()
+(defun main-xmpp-bot (argv)
+  (declare (ignore argv))
   (with-interactive-interrupt
     (setq swank:*use-dedicated-output-stream* nil)
     (swank:create-server
@@ -18,14 +19,6 @@
     (setf local-time:*default-timezone* (local-time:find-timezone-by-location-name *client-timezone*))
     (mentat-db:init-storage *db-name*)
     (start-connection-loop *connection*)))
-
-#+sbcl
-(defun save-image-xmpp-bot ()
-  (swank-loader::init :load-contribs t)
-  (sb-ext:save-lisp-and-die "mentat-xmpp-bot"
-                            :compression t
-                            :executable t
-                            :toplevel #'main-xmpp-bot))
 
 ;;TODO: automate
 (defparameter *usage*

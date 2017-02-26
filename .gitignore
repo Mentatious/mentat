@@ -1,3 +1,6 @@
+builds
 config.lisp
 data
 inventory.ini
+quicklisp
+quicklisp-manifest.txt

@@ -3,7 +3,8 @@
 (defparameter *timers* (make-hash-table :test #'equal))
 
 #+sbcl
-(defun main-notifier ()
+(defun main-notifier (argv)
+  (declare (ignore argv))
   (setq swank:*use-dedicated-output-stream* nil)
   (swank:create-server
    :port 4008
@@ -17,14 +18,6 @@
   (cl-cron:make-cron-job 'check-update-notifications :step-min 1)
   (cl-cron:start-cron)
   (bordeaux-threads::join-thread cl-cron::*cron-dispatcher-thread*))
-
-#+sbcl
-(defun save-image-notifier ()
-  (swank-loader::init :load-contribs t)
-  (sb-ext:save-lisp-and-die "mentat-notifier"
-                            :compression t
-                            :executable t
-                            :toplevel #'main-notifier))
 
 (defun check-update-notifications ()
   (maphash

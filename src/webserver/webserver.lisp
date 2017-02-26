@@ -1,7 +1,8 @@
 (in-package #:mentat-webserver)
 
 #+sbcl
-(defun webserver-main ()
+(defun main-webserver (argv)
+  (declare (ignore argv))
   (setq swank:*use-dedicated-output-stream* nil)
   (swank:create-server
    :port 4007
@@ -15,14 +16,6 @@
     (lambda (th)
       (string= (sb-thread:thread-name th) "hunchentoot-listener-*:4242"))
     (sb-thread:list-all-threads))))
-
-#+sbcl
-(defun save-image-webserver ()
-  (swank-loader::init :load-contribs t)
-  (sb-ext:save-lisp-and-die "mentat-webserver"
-                            :compression t
-                            :executable t
-                            :toplevel #'webserver-main))
 
 (hunchentoot:define-easy-handler (test-uri :uri "/mentat.org"
                                            :default-request-type :get) (username)

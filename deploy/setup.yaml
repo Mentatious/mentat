@@ -17,27 +17,31 @@
       tags:
         - always
 
-    # TODO: exclude Quicklisp, see:
-    # https://www.darkchestnut.com/2016/dont-put-quicklisp-in-your-binary-just-because-a-library-demands-it/
-    # https://www.darkchestnut.com/2016/keep-quicklisp-and-qlot-out-of-your-application-binary/
-
     - name: build xmpp binary
-      shell: "sbcl --eval \"(ql:quickload 'mentat-xmpp)\" --eval \"(mentat-xmpp::save-image-xmpp-bot)\""
+      shell: "make -f makefile-bot"
+      args:
+        chdir: "{{ playbook_dir }}/../src"
       tags:
         - bot
 
     - name: build notifier binary
-      shell: "sbcl --eval \"(ql:quickload 'mentat-notifier)\" --eval \"(mentat-notifier::save-image-notifier)\""
+      shell: "make -f makefile-notifier"
+      args:
+        chdir: "{{ playbook_dir }}/../src"
       tags:
         - notifier
 
     - name: build restapi binary
-      shell: "sbcl --eval \"(ql:quickload 'mentat-restapi)\" --eval \"(mentat-restapi::save-image-restapi)\""
+      shell: "make -f makefile-restapi"
+      args:
+        chdir: "{{ playbook_dir }}/../src"
       tags:
         - restapi
 
     - name: build webserver binary
-      shell: "sbcl --eval \"(ql:quickload 'mentat-webserver)\" --eval \"(mentat-webserver::save-image-webserver)\""
+      shell: "make -f makefile-webserver"
+      args:
+        chdir: "{{ playbook_dir }}/../src"
       tags:
         - webserver
 
@@ -79,7 +83,7 @@
         - bot
 
     - name: copy compiled xmpp binary to remote server
-      copy: src=../deploy/{{ xmpp_binary_name }} dest=/home/{{ username }}
+      copy: src=../builds/{{ xmpp_binary_name }} dest=/home/{{ username }}
       tags:
         - bot
 
@@ -115,7 +119,7 @@
         - notifier
 
     - name: copy compiled notifier binary to remote server
-      copy: src=../deploy/{{ notifier_binary_name }} dest=/home/{{ username }}
+      copy: src=../builds/{{ notifier_binary_name }} dest=/home/{{ username }}
       tags:
         - notifier
 
@@ -151,7 +155,7 @@
         - restapi
 
     - name: copy compiled restapi binary to remote server
-      copy: src=../deploy/{{ restapi_binary_name }} dest=/home/{{ username }}
+      copy: src=../builds/{{ restapi_binary_name }} dest=/home/{{ username }}
       tags:
         - restapi
 
@@ -187,7 +191,7 @@
         - webserver
 
     - name: copy compiled webserver binary to remote server
-      copy: src=../deploy/{{ webserver_binary_name }} dest=/home/{{ username }}
+      copy: src=../builds/{{ webserver_binary_name }} dest=/home/{{ username }}
       tags:
         - webserver
 
