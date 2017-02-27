@@ -1,5 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:mentat-restapi
-  (:use #:cl #:ningle)
+  (:use #:cl)
   (:export #:restapi-main))

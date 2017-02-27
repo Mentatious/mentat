@@ -7,35 +7,6 @@
 
 (defparameter *entries* nil)
 
-(defparameter *app* (make-instance 'ningle:<app>))
-
-(defun get-request-content ()
-  (flexi-streams:octets-to-string
-   (lack.request::request-content ningle:*request*)
-   :external-format :utf8))
-
-(setf (ningle:route *app* "/api/v1" :method :post)
-      #'(lambda (params)
-          (json:encode-json-to-string '((result . ok)))))
-
-(setf (ningle:route *app* "/entries" :method :get)
-      #'(lambda (params)
-          (json:encode-json-to-string `((entries . ,*entries*) (result . ok)))
-          ))
-
-(setf (ningle:route *app* "/entries" :method :post)
-      #'(lambda (params)
-          (let ((payload (get-request-content)))
-            (format t "payload: ~a" payload)
-            (push payload *entries*)
-            (json:encode-json-to-string `((result . ok)))
-            )))
-
-(setf (ningle:route *app* "/entries" :method :delete)
-      #'(lambda (params)
-          (setf *entries* nil)
-          "ok"))
-
 #+sbcl
 (defun restapi-main ()
   (setq swank:*use-dedicated-output-stream* nil)
@@ -44,14 +15,25 @@
    :style swank:*communication-style*
    :dont-close t)
   (mentat-util:load-config "restapi-config.lisp")
-  (clack:clackup *app* :port 9003)
+  (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 9003))
   (sb-thread:join-thread
    (find-if
     (lambda (th)
-      (string= (sb-thread:thread-name th) "clack-handler-hunchentoot"))
+      (string= (sb-thread:thread-name th) "hunchentoot-listener-*:9003"))
     (sb-thread:list-all-threads))))
 
-#+sbcl
+(hunchentoot:define-easy-handler (api-endpoint :uri "/api/v1/"
+                                           :default-request-type :post) ()
+  (setf (hunchentoot:content-type*) "application/json")
+  (json:encode-json-to-string '((result . ok))))
+
+(hunchentoot:define-easy-handler (entries :uri "/entries"
+                                           :default-request-type :get) ()
+  (setf (hunchentoot:content-type*) "application/json")
+  (json:encode-json-to-string `((entries . ,*entries*) (result . ok))))
+
+;; TODO: reimplement "/entries" for POST
+
 (defun save-image-restapi ()
   (swank-loader::init :load-contribs t)
   (sb-ext:save-lisp-and-die "mentat-restapi"

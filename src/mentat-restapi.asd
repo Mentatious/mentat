@@ -6,12 +6,9 @@
   :depends-on (#:mentat-util
                #:unix-opts
                #:cl-mongo
-               #:clack
-               #:lack-middleware-backtrace
-               #:clack-handler-hunchentoot
-               #:ningle
                #:flexi-streams
                #:cl-json
+               #:hunchentoot
                #:swank)
   :serial t
   :pathname "restapi"
